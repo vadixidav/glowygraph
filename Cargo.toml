@@ -1,9 +1,9 @@
 [package]
-name = "gloweygraph"
+name = "glowygraph"
 version = "0.0.1"
-description = "A library for drawing glowey graphs"
+description = "A library for drawing glowy graphs"
 authors = ["Geordon Worley <vadixidav@gmail.com>"]
-keywords = ["graph", "glow", "glowey", "render", "draw"]
+keywords = ["graph", "glow", "glowy", "render", "draw"]
 license = "BSD-2-Clause"
 
 [dependencies]
