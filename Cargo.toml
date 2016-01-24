@@ -7,4 +7,6 @@ keywords = ["graph", "glow", "glowey", "render", "draw"]
 license = "BSD-2-Clause"
 
 [dependencies]
-glium = "13.3"
+glium = "0.13.3"
+zoom = "1.0.1"
+petgraph = "0.2.2"
