@@ -1,6 +1,5 @@
 #[macro_use]
 extern crate glium;
-extern crate petgraph;
 extern crate zoom;
 extern crate num;
 
@@ -30,20 +29,20 @@ static FSHADER_SOURCE: &'static str = r#"
     }
 "#;
 
-pub struct GraphRenderer<'a> {
+pub struct Renderer<'a> {
     display: &'a glium::Display,
     program: glium::Program,
 }
 
-impl<'a> GraphRenderer<'a> {
+impl<'a> Renderer<'a> {
     pub fn new(display: &'a glium::Display) -> Self {
-        GraphRenderer {
+        Renderer {
             display: display,
             program: glium::Program::from_source(display, VSHADER_SOURCE, FSHADER_SOURCE, None).unwrap(),
         }
     }
 
-    pub fn render<I>(&self, transform: [[f32; 4]; 4], nodes: I)
+    pub fn render_nodes<I>(&self, transform: [[f32; 4]; 4], nodes: I)
         where I: Iterator<Item=zoom::Cartesian2<f32>>
     {
         #[derive(Copy, Clone)]
@@ -54,6 +53,7 @@ impl<'a> GraphRenderer<'a> {
 
         implement_vertex!(Vertex, position, center);
 
+        //Create smallest equilateral triangle possible containing unit circle
         let out_triangle = [
             zoom::Cartesian2{x: 0.0, y: 2.0},
             zoom::Cartesian2{x: -1.7320508075689, y: -1.0},
@@ -83,8 +83,7 @@ impl<'a> GraphRenderer<'a> {
             ..Default::default()
         };
 
-        target.draw(&vertex_buffer, &indices, &self.program, &uniforms,
-                    &params).unwrap();
+        target.draw(&vertex_buffer, &indices, &self.program, &uniforms, &params).unwrap();
         target.finish().unwrap();
     }
 }

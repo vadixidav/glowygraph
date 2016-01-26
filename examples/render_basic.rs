@@ -9,13 +9,16 @@ use num::traits::Float;
 fn main() {
     use glium::DisplayBuild;
     let display = glium::glutin::WindowBuilder::new().build_glium().unwrap();
-    let glowy = glowygraph::GraphRenderer::new(&display);
+    let glowy = glowygraph::Renderer::new(&display);
 
     let mut deps = petgraph::Graph::<zoom::Cartesian2<f32>, bool>::new();
-    deps.add_node(zoom::Cartesian2{x: -0.5, y: -0.5} * 32.0);
-    deps.add_node(zoom::Cartesian2{x: 0.0, y: 0.5} * 32.0);
-    deps.add_node(zoom::Cartesian2{x: 0.5, y: -0.25} * 32.0);
-    deps.add_node(zoom::Cartesian2{x: 0.25, y: -0.35} * 32.0);
+    deps.add_node(zoom::Cartesian2{x: -0.2, y: -0.3} * 32.0);
+    deps.add_node(zoom::Cartesian2{x: 0.4, y: 0.5} * 32.0);
+    deps.add_node(zoom::Cartesian2{x: 0.6, y: -0.7} * 32.0);
+    deps.add_node(zoom::Cartesian2{x: -0.8, y: -0.9} * 32.0);
+    deps.add_node(zoom::Cartesian2{x: 0.1, y: 0.2} * 32.0);
+    deps.add_node(zoom::Cartesian2{x: -0.3, y: 0.4} * 32.0);
+    deps.add_node(zoom::Cartesian2{x: 0.5, y: -0.6} * 32.0);
 
     let mut t = 0.0;
     loop {
@@ -26,7 +29,7 @@ fn main() {
             [0.0, 0.0, 1.0, 0.0],
             [0.0, 0.0, 0.0, 1.0],
         ];
-        glowy.render(transform, deps.node_weights_mut().map(|n| n.clone()));
+        glowy.render_nodes(transform, deps.node_weights_mut().map(|n| n.clone()));
 
         for ev in display.poll_events() {
             match ev {
