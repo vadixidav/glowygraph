@@ -8,6 +8,6 @@ license = "BSD-2-Clause"
 
 [dependencies]
 glium = "0.13.3"
-zoom = "1.0.2"
 petgraph = "0.2.2"
 num = "0.1.30"
+nalgebra = "0.5.1"

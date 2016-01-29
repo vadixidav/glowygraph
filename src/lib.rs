@@ -1,64 +1,53 @@
 #[macro_use]
 extern crate glium;
-extern crate zoom;
 extern crate num;
+extern crate nalgebra as na;
 
 use glium::Surface;
 
 static VSHADER_SOURCE: &'static str = r#"
-    #version 140
-    in vec2 position;
-    in vec2 center;
-    out vec2 frag_pos;
-    out vec2 frag_cen;
-    uniform mat4 matrix;
+    #version 150
+    in vec3 position;
+    uniform mat4 modelview;
     void main() {
-        frag_pos = position;
-        frag_cen = center;
-        gl_Position = matrix * vec4(position, 0.0, 1.0);
+        gl_Position = modelview * vec4(position, 1.0);
     }
 "#;
 
 static GSHADER_SOURCE: &'static str = r#"
-    #version 140
+    #version 150
 
-    uniform mat4 uProjectionMatrix;
-    uniform mat4 uModelviewMatrix;
+    uniform mat4 projection;
 
     layout(points) in;
-    layout(triangle_strip, max_vertices = 4) out;
+    layout(triangle_strip, max_vertices = 3) out;
 
-    out vec2 varTex;
+    out vec2 delta;
 
     void main()
     {
-    vec4 center = uModelviewMatrix * gl_in[0].gl_Position;
+    vec4 center = gl_in[0].gl_Position;
 
-    varTex = vec2( 0, 0 );
-    gl_Position = uProjectionMatrix * (center + vec4(10, 10, 0, 0));
+    delta = vec2(0, 2.0);
+    gl_Position = projection * (center + vec4(delta, 0, 0));
     EmitVertex();
 
-    varTex = vec2( 599, 0  );
-    gl_Position = uProjectionMatrix * (center + vec4(10, -10, 0, 0));
+    delta = vec2(-1.7320508075689, -1.0);
+    gl_Position = projection * (center + vec4(delta, 0, 0));
     EmitVertex();
 
-    varTex = vec2( 0, 590 );
-    gl_Position = uProjectionMatrix * (center + vec4(-10, 10, 0, 0));
-    EmitVertex();
-
-    varTex = vec2( 599, 590 );
-    gl_Position = uProjectionMatrix * (center + vec4(-10, -10, 0, 0));
+    delta = vec2(1.7320508075689, -1.0);
+    gl_Position = projection * (center + vec4(delta, 0, 0));
     EmitVertex();
     }
 "#;
 
 static FSHADER_SOURCE: &'static str = r#"
-    #version 140
-    in vec2 frag_pos;
-    in vec2 frag_cen;
+    #version 150
+    in vec2 delta;
     out vec4 color;
     void main() {
-        color = vec4(1.0, 0.0, 0.0, max(0.0, 1.0 - length(frag_pos-frag_cen)));
+        color = vec4(1.0, 0.0, 0.0, max(0.0, 0.5 - pow(length(delta), 0.25)));
     }
 "#;
 
@@ -76,40 +65,28 @@ impl<'a> Renderer<'a> {
         }
     }
 
-    pub fn render_nodes<I>(&self, transform: [[f32; 4]; 4], nodes: I)
-        where I: Iterator<Item=zoom::Cartesian2<f32>>
+    pub fn render_nodes<I>(&self, modelview: [[f32; 4]; 4], projection: [[f32; 4]; 4], nodes: I)
+        where I: Iterator<Item=na::Vec3<f32>>
     {
         #[derive(Copy, Clone)]
         struct Vertex {
-            position: [f32; 2],
-            center: [f32; 2],
+            position: [f32; 3],
         }
 
-        implement_vertex!(Vertex, position, center);
+        implement_vertex!(Vertex, position);
 
-        //Create smallest equilateral triangle possible containing unit circle
-        let out_triangle = [
-            zoom::Cartesian2{x: 0.0, y: 2.0},
-            zoom::Cartesian2{x: -1.7320508075689, y: -1.0},
-            zoom::Cartesian2{x: 1.7320508075689, y: -1.0},
-        ];
-
-        let vertices: Vec<_> = nodes.flat_map(|n| {
-            out_triangle
-                .iter()
-                .map(move |&v| (v + n))
-                .map(move |v| Vertex{position: [v.x, v.y], center: [n.x, n.y]})
-        }).collect();
+        let vertices: Vec<_> = nodes.map(|n| Vertex{position: [n.x, n.y, n.z]}).collect();
 
         let vertex_buffer = glium::VertexBuffer::new(self.display, &vertices).unwrap();
         //let center_buffer = glium::VertexBuffer::new(display, &centers).unwrap();
-        let indices = glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList);
+        let indices = glium::index::NoIndices(glium::index::PrimitiveType::Points);
 
         let mut target = self.display.draw();
-        target.clear_color(0.0, 0.0, 1.0, 1.0);
+        target.clear_color(0.0, 0.0, 0.0, 1.0);
 
         let uniforms = uniform! {
-            matrix: transform,
+            modelview: modelview,
+            projection: projection,
         };
 
         let params = glium::DrawParameters {
