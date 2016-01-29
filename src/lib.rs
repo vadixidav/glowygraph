@@ -19,6 +19,39 @@ static VSHADER_SOURCE: &'static str = r#"
     }
 "#;
 
+static GSHADER_SOURCE: &'static str = r#"
+    #version 140
+
+    uniform mat4 uProjectionMatrix;
+    uniform mat4 uModelviewMatrix;
+
+    layout(points) in;
+    layout(triangle_strip, max_vertices = 4) out;
+
+    out vec2 varTex;
+
+    void main()
+    {
+    vec4 center = uModelviewMatrix * gl_in[0].gl_Position;
+
+    varTex = vec2( 0, 0 );
+    gl_Position = uProjectionMatrix * (center + vec4(10, 10, 0, 0));
+    EmitVertex();
+
+    varTex = vec2( 599, 0  );
+    gl_Position = uProjectionMatrix * (center + vec4(10, -10, 0, 0));
+    EmitVertex();
+
+    varTex = vec2( 0, 590 );
+    gl_Position = uProjectionMatrix * (center + vec4(-10, 10, 0, 0));
+    EmitVertex();
+
+    varTex = vec2( 599, 590 );
+    gl_Position = uProjectionMatrix * (center + vec4(-10, -10, 0, 0));
+    EmitVertex();
+    }
+"#;
+
 static FSHADER_SOURCE: &'static str = r#"
     #version 140
     in vec2 frag_pos;
@@ -38,7 +71,8 @@ impl<'a> Renderer<'a> {
     pub fn new(display: &'a glium::Display) -> Self {
         Renderer {
             display: display,
-            program: glium::Program::from_source(display, VSHADER_SOURCE, FSHADER_SOURCE, None).unwrap(),
+            program: glium::Program::from_source(display,
+                VSHADER_SOURCE, FSHADER_SOURCE, Some(GSHADER_SOURCE)).unwrap(),
         }
     }
 
