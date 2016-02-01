@@ -70,6 +70,7 @@ static FSHADER_SOURCE: &'static str = r#"
 pub struct Node {
     pub position: [f32; 3],
     pub color: [f32; 4],
+    ///Decreasing falloff makes the nodes brightness more centered at the middle and increasing it makes it consistent.
     pub falloff: f32,
 }
 
@@ -80,7 +81,9 @@ pub struct Renderer<'a> {
     program: glium::Program,
 }
 
+///A Renderer is tied to the lifetime of the glium Display and making one builds a GLSL program internally.
 impl<'a> Renderer<'a> {
+    ///Make a new Renderer from a glium::Display.
     pub fn new(display: &'a glium::Display) -> Self {
         Renderer {
             display: display,
@@ -89,6 +92,7 @@ impl<'a> Renderer<'a> {
         }
     }
 
+    ///Take a modelview matrix, projection matrix, and a series of nodes and draw them in parallel on the GPU.
     pub fn render_nodes(&self, modelview: &[[f32; 4]; 4], projection: &[[f32; 4]; 4], nodes: &[Node]) {
         let vertex_buffer = glium::VertexBuffer::new(self.display, nodes).unwrap();
         let indices = glium::index::NoIndices(glium::index::PrimitiveType::Points);
