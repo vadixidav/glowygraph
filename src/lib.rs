@@ -9,10 +9,13 @@ static VSHADER_SOURCE: &'static str = r#"
     #version 150
     in vec3 position;
     in vec4 color;
+    in float falloff;
     out vec4 gcolor;
+    out float gfalloff;
     uniform mat4 modelview;
     void main() {
         gcolor = color;
+        gfalloff = falloff;
         gl_Position = modelview * vec4(position, 1.0);
     }
 "#;
@@ -26,12 +29,15 @@ static GSHADER_SOURCE: &'static str = r#"
     layout(triangle_strip, max_vertices = 3) out;
 
     in vec4 gcolor[1];
+    in float gfalloff[1];
     out vec2 delta;
     out vec4 fcolor;
+    out float ffalloff;
 
     void main()
     {
         fcolor = gcolor[0];
+        ffalloff = gfalloff[0];
         vec4 center = gl_in[0].gl_Position;
 
         delta = vec2(0, 2.0);
@@ -52,9 +58,10 @@ static FSHADER_SOURCE: &'static str = r#"
     #version 150
     in vec2 delta;
     in vec4 fcolor;
+    in float ffalloff;
     out vec4 color;
     void main() {
-        color = max(0.0, 0.5 - pow(length(delta), 0.25)) * fcolor;
+        color = vec4(fcolor.xyz, fcolor.a * max(0.0, 1.0 - pow(length(delta), ffalloff)));
     }
 "#;
 
@@ -63,9 +70,10 @@ static FSHADER_SOURCE: &'static str = r#"
 pub struct Node {
     pub position: [f32; 3],
     pub color: [f32; 4],
+    pub falloff: f32,
 }
 
-implement_vertex!(Node, position, color);
+implement_vertex!(Node, position, color, falloff);
 
 pub struct Renderer<'a> {
     display: &'a glium::Display,

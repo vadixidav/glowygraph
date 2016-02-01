@@ -41,8 +41,11 @@ fn main() {
     let mut bkstate = glium::glutin::ElementState::Released;
 
     loop {
-        glowy.render_nodes(movement.to_homogeneous().as_ref(), &perspective,
-            &deps.node_weights_mut().map(|n| gg::Node{position: n.clone(), color: [1.0, 1.0, 1.0, 1.0]}).collect::<Vec<_>>()[..]);
+        let matr = movement.to_homogeneous() * 3.0;
+        glowy.render_nodes(matr.as_ref(), &perspective,
+            &deps.node_weights_mut().map(|n|
+                gg::Node{position: n.clone(), color: [1.0, 1.0, 1.0, 1.0], falloff: 0.25}
+            ).collect::<Vec<_>>()[..]);
 
         for ev in display.poll_events() {
             match ev {
