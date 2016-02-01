@@ -31,20 +31,20 @@ static GSHADER_SOURCE: &'static str = r#"
 
     void main()
     {
-    fcolor = gcolor[0];
-    vec4 center = gl_in[0].gl_Position;
+        fcolor = gcolor[0];
+        vec4 center = gl_in[0].gl_Position;
 
-    delta = vec2(0, 2.0);
-    gl_Position = projection * (center + vec4(delta, 0, 0));
-    EmitVertex();
+        delta = vec2(0, 2.0);
+        gl_Position = projection * (center + vec4(delta, 0, 0));
+        EmitVertex();
 
-    delta = vec2(-1.7320508075689, -1.0);
-    gl_Position = projection * (center + vec4(delta, 0, 0));
-    EmitVertex();
+        delta = vec2(-1.7320508075689, -1.0);
+        gl_Position = projection * (center + vec4(delta, 0, 0));
+        EmitVertex();
 
-    delta = vec2(1.7320508075689, -1.0);
-    gl_Position = projection * (center + vec4(delta, 0, 0));
-    EmitVertex();
+        delta = vec2(1.7320508075689, -1.0);
+        gl_Position = projection * (center + vec4(delta, 0, 0));
+        EmitVertex();
     }
 "#;
 
