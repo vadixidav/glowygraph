@@ -1,2 +1,2 @@
-# gloweygraph
-Gloweygraph is a library that draws glowey graphs.
+# glowygraph
+Glowygraph is a library that draws glowy graphs.
