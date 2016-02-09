@@ -201,6 +201,7 @@ pub struct Renderer<'a> {
     display: &'a glium::Display,
     node_program: glium::Program,
     edge_program: glium::Program,
+    params: glium::DrawParameters<'a>,
 }
 
 ///A Renderer is tied to the lifetime of the glium Display and making one builds a GLSL program internally.
@@ -213,6 +214,10 @@ impl<'a> Renderer<'a> {
                 VSHADER_SOURCE, FSHADER_SOURCE, Some(NODE_GSHADER_SOURCE)).unwrap(),
             edge_program: glium::Program::from_source(display,
                 VSHADER_SOURCE, FSHADER_SOURCE, Some(EDGE_GSHADER_SOURCE)).unwrap(),
+            params: glium::DrawParameters {
+                blend: glium::Blend::alpha_blending(),
+                ..Default::default()
+            },
         }
     }
 
@@ -227,12 +232,7 @@ impl<'a> Renderer<'a> {
             modelview: *modelview,
             projection: *projection,
         };
-
-        let params = glium::DrawParameters {
-            blend: glium::Blend::alpha_blending(),
-            ..Default::default()
-        };
-        target.draw(&vertex_buffer, &indices, &self.node_program, &uniforms, &params).unwrap();
+        target.draw(&vertex_buffer, &indices, &self.node_program, &uniforms, &self.params).unwrap();
     }
 
     ///Take a modelview matrix, projection matrix, and a series of lines (edges) and draw them in parallel on the GPU.
@@ -246,11 +246,6 @@ impl<'a> Renderer<'a> {
             modelview: *modelview,
             projection: *projection,
         };
-
-        let params = glium::DrawParameters {
-            blend: glium::Blend::alpha_blending(),
-            ..Default::default()
-        };
-        target.draw(&vertex_buffer, &indices, &self.edge_program, &uniforms, &params).unwrap();
+        target.draw(&vertex_buffer, &indices, &self.edge_program, &uniforms, &self.params).unwrap();
     }
 }
