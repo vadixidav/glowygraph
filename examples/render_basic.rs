@@ -63,7 +63,7 @@ fn main() {
         //Render nodes
         glowy.render_nodes(&mut target, matr.as_ref(), &perspective,
             &deps.node_weights_mut().map(|n|
-                gg::Node{position: n.clone(), color: [1.0, 0.0, 0.0, 1.0], falloff: 0.25}
+                gg::Node{position: n.clone(), color: [1.0, 0.0, 0.0, 1.0], falloff: 0.25, radius: 2.0}
             ).collect::<Vec<_>>()[..]);
 
         //Render edges
@@ -76,12 +76,14 @@ fn main() {
                     std::iter::once(gg::Node{
                         position: deps.node_weight(indices.0).unwrap().clone(),
                         color: [0.0, 1.0, 0.0, 1.0],
-                        falloff: 0.25
+                        falloff: 0.25,
+                        radius: 1.0,
                     }).chain(
                     std::iter::once(gg::Node{
                         position: deps.node_weight(indices.1).unwrap().clone(),
                         color: [0.0, 0.0, 1.0, 1.0],
-                        falloff: 0.25
+                        falloff: 0.25,
+                        radius: 3.0,
                     }))
                 }
             ).collect::<Vec<_>>()[..]
