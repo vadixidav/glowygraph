@@ -10,12 +10,15 @@ static VSHADER_SOURCE: &'static str = r#"
     in vec3 position;
     in vec4 color;
     in float falloff;
+    in float radius;
     out vec4 gcolor;
     out float gfalloff;
+    out float gradius;
     uniform mat4 modelview;
     void main() {
         gcolor = color;
         gfalloff = falloff;
+        gradius = radius;
         gl_Position = modelview * vec4(position, 1.0);
     }
 "#;
@@ -30,24 +33,28 @@ static NODE_GSHADER_SOURCE: &'static str = r#"
 
     in vec4 gcolor[1];
     in float gfalloff[1];
+    in float gradius[1];
     out vec2 delta;
     out vec4 fcolor;
+    out float fradius;
     out float ffalloff;
 
     void main() {
         fcolor = gcolor[0];
+        fradius = gradius[0];
         ffalloff = gfalloff[0];
+        float radius = gradius[0];
         vec4 center = gl_in[0].gl_Position;
 
-        delta = vec2(0, 2);
+        delta = radius * vec2(0, 2);
         gl_Position = projection * (center + vec4(delta, 0, 0));
         EmitVertex();
 
-        delta = vec2(-1.7320508075689, -1);
+        delta = radius * vec2(-1.7320508075689, -1);
         gl_Position = projection * (center + vec4(delta, 0, 0));
         EmitVertex();
 
-        delta = vec2(1.7320508075689, -1);
+        delta = radius * vec2(1.7320508075689, -1);
         gl_Position = projection * (center + vec4(delta, 0, 0));
         EmitVertex();
     }
@@ -63,8 +70,10 @@ static EDGE_GSHADER_SOURCE: &'static str = r#"
 
     in vec4 gcolor[2];
     in float gfalloff[2];
+    in float gradius[2];
     out vec2 delta;
     out vec4 fcolor;
+    out float fradius;
     out float ffalloff;
 
     void main() {
@@ -77,22 +86,25 @@ static EDGE_GSHADER_SOURCE: &'static str = r#"
 
         //Vertex 0
         fcolor = gcolor[0];
+        fradius = gradius[0];
         ffalloff = gfalloff[0];
-        delta = vec2(net_delta.y, -net_delta.x);
+        delta = fradius * vec2(net_delta.y, -net_delta.x);
         gl_Position = projection * (first - vec4(delta, 0, 0));
         EmitVertex();
 
         //Vertex 1
         fcolor = gcolor[0];
+        fradius = gradius[0];
         ffalloff = gfalloff[0];
-        delta = net_delta;
+        delta = fradius * net_delta;
         gl_Position = projection * (first - vec4(delta, 0, 0));
         EmitVertex();
 
         //Vertex 2
         fcolor = gcolor[0];
+        fradius = gradius[0];
         ffalloff = gfalloff[0];
-        delta = vec2(-net_delta.y, net_delta.x);
+        delta = fradius * vec2(-net_delta.y, net_delta.x);
         gl_Position = projection * (first - vec4(delta, 0, 0));
         EmitVertex();
 
@@ -102,22 +114,25 @@ static EDGE_GSHADER_SOURCE: &'static str = r#"
 
         //Vertex 0
         fcolor = gcolor[0];
+        fradius = gradius[0];
         ffalloff = gfalloff[0];
-        delta = vec2(net_delta.y, -net_delta.x);
+        delta = fradius * vec2(net_delta.y, -net_delta.x);
         gl_Position = projection * (first - vec4(delta, 0, 0));
         EmitVertex();
 
         //Vertex 2
         fcolor = gcolor[0];
+        fradius = gradius[0];
         ffalloff = gfalloff[0];
-        delta = vec2(-net_delta.y, net_delta.x);
+        delta = fradius * vec2(-net_delta.y, net_delta.x);
         gl_Position = projection * (first - vec4(delta, 0, 0));
         EmitVertex();
 
         //Vertex 3
         fcolor = gcolor[1];
+        fradius = gradius[1];
         ffalloff = gfalloff[1];
-        delta = vec2(net_delta.y, -net_delta.x);
+        delta = fradius * vec2(net_delta.y, -net_delta.x);
         gl_Position = projection * (second - vec4(delta, 0, 0));
         EmitVertex();
 
@@ -127,22 +142,25 @@ static EDGE_GSHADER_SOURCE: &'static str = r#"
 
         //Vertex 2
         fcolor = gcolor[0];
+        fradius = gradius[0];
         ffalloff = gfalloff[0];
-        delta = vec2(-net_delta.y, net_delta.x);
+        delta = fradius * vec2(-net_delta.y, net_delta.x);
         gl_Position = projection * (first - vec4(delta, 0, 0));
         EmitVertex();
 
         //Vertex 4
         fcolor = gcolor[1];
+        fradius = gradius[1];
         ffalloff = gfalloff[1];
-        delta = vec2(-net_delta.y, net_delta.x);
+        delta = fradius * vec2(-net_delta.y, net_delta.x);
         gl_Position = projection * (second - vec4(delta, 0, 0));
         EmitVertex();
 
         //Vertex 3
         fcolor = gcolor[1];
+        fradius = gradius[1];
         ffalloff = gfalloff[1];
-        delta = vec2(net_delta.y, -net_delta.x);
+        delta = fradius * vec2(net_delta.y, -net_delta.x);
         gl_Position = projection * (second - vec4(delta, 0, 0));
         EmitVertex();
 
@@ -152,22 +170,25 @@ static EDGE_GSHADER_SOURCE: &'static str = r#"
 
         //Vertex 5
         fcolor = gcolor[1];
+        fradius = gradius[1];
         ffalloff = gfalloff[1];
-        delta = net_delta;
+        delta = fradius * net_delta;
         gl_Position = projection * (second + vec4(delta, 0, 0));
         EmitVertex();
 
         //Vertex 3
         fcolor = gcolor[1];
+        fradius = gradius[1];
         ffalloff = gfalloff[1];
-        delta = vec2(net_delta.y, -net_delta.x);
+        delta = fradius * vec2(net_delta.y, -net_delta.x);
         gl_Position = projection * (second - vec4(delta, 0, 0));
         EmitVertex();
 
         //Vertex 4
         fcolor = gcolor[1];
+        fradius = gradius[1];
         ffalloff = gfalloff[1];
-        delta = vec2(-net_delta.y, net_delta.x);
+        delta = fradius * vec2(-net_delta.y, net_delta.x);
         gl_Position = projection * (second - vec4(delta, 0, 0));
         EmitVertex();
 
@@ -179,10 +200,11 @@ static FSHADER_SOURCE: &'static str = r#"
     #version 150
     in vec2 delta;
     in vec4 fcolor;
+    in float fradius;
     in float ffalloff;
     out vec4 color;
     void main() {
-        color = vec4(fcolor.xyz, fcolor.a * max(0.0, 1.0 - pow(length(delta), ffalloff)));
+        color = vec4(fcolor.xyz, fcolor.a * max(0.0, 1.0 - pow(length(delta) / fradius, ffalloff)));
     }
 "#;
 
@@ -193,14 +215,16 @@ pub struct Node {
     pub color: [f32; 4],
     ///Decreasing falloff makes the nodes brightness more centered at the middle and increasing it makes it consistent.
     pub falloff: f32,
+    pub radius: f32,
 }
 
-implement_vertex!(Node, position, color, falloff);
+implement_vertex!(Node, position, color, falloff, radius);
 
 pub struct Renderer<'a> {
     display: &'a glium::Display,
     node_program: glium::Program,
     edge_program: glium::Program,
+    params: glium::DrawParameters<'a>,
 }
 
 ///A Renderer is tied to the lifetime of the glium Display and making one builds a GLSL program internally.
@@ -213,6 +237,10 @@ impl<'a> Renderer<'a> {
                 VSHADER_SOURCE, FSHADER_SOURCE, Some(NODE_GSHADER_SOURCE)).unwrap(),
             edge_program: glium::Program::from_source(display,
                 VSHADER_SOURCE, FSHADER_SOURCE, Some(EDGE_GSHADER_SOURCE)).unwrap(),
+            params: glium::DrawParameters {
+                blend: glium::Blend::alpha_blending(),
+                ..Default::default()
+            },
         }
     }
 
@@ -227,12 +255,7 @@ impl<'a> Renderer<'a> {
             modelview: *modelview,
             projection: *projection,
         };
-
-        let params = glium::DrawParameters {
-            blend: glium::Blend::alpha_blending(),
-            ..Default::default()
-        };
-        target.draw(&vertex_buffer, &indices, &self.node_program, &uniforms, &params).unwrap();
+        target.draw(&vertex_buffer, &indices, &self.node_program, &uniforms, &self.params).unwrap();
     }
 
     ///Take a modelview matrix, projection matrix, and a series of lines (edges) and draw them in parallel on the GPU.
@@ -246,11 +269,6 @@ impl<'a> Renderer<'a> {
             modelview: *modelview,
             projection: *projection,
         };
-
-        let params = glium::DrawParameters {
-            blend: glium::Blend::alpha_blending(),
-            ..Default::default()
-        };
-        target.draw(&vertex_buffer, &indices, &self.edge_program, &uniforms, &params).unwrap();
+        target.draw(&vertex_buffer, &indices, &self.edge_program, &uniforms, &self.params).unwrap();
     }
 }
