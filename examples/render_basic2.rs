@@ -29,6 +29,23 @@ fn main() {
                              (nodes[5], nodes[6]),
                              (nodes[6], nodes[0])]);
 
+    let qbeziers = vec![QBezier {
+                            position0: [-0.9, -0.9],
+                            position1: [0.9, 0.0],
+                            position2: [0.9, 0.0],
+                            inner_color0: [1.0, 0.0, 0.0, 1.0],
+                            inner_color1: [0.0, 0.0, 1.0, 1.0],
+                            falloff_color0: [0.0, 1.0, 0.0, 1.0],
+                            falloff_color1: [1.0, 0.0, 0.0, 1.0],
+                            falloff0: 0.25,
+                            falloff1: 0.8,
+                            falloff_radius0: 0.2,
+                            falloff_radius1: 0.05,
+                            inner_radius0: 0.05,
+                            inner_radius1: 0.3,
+                            accuracy: 8,
+                        }];
+
     loop {
         use glium::Surface;
 
@@ -36,7 +53,7 @@ fn main() {
         target.clear_color(0.0, 0.0, 0.0, 1.0);
 
         // Render nodes
-        glowy.render_nodes(&mut target,
+        /*glowy.render_nodes(&mut target,
                            &deps.node_weights_mut()
                                .map(|n| {
                 Node {
@@ -73,7 +90,10 @@ fn main() {
                         falloff_radius: 0.05,
                     }))
             })
-                               .collect::<Vec<_>>()[..]);
+                               .collect::<Vec<_>>()[..]);*/
+
+        // Render nodes
+        glowy.render_qbeziers(&mut target, &qbeziers);
 
         target.finish().unwrap();
 

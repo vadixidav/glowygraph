@@ -1,5 +1,6 @@
 use glium::{self, Surface};
 mod linear;
+mod qbezier;
 
 /// Node is used to pass nodes into the renderer.
 #[derive(Copy, Clone)]
@@ -21,10 +22,47 @@ implement_vertex!(Node,
                   falloff_radius,
                   inner_radius);
 
+/// Node is used to pass nodes into the renderer.
+#[derive(Copy, Clone)]
+pub struct QBezier {
+    pub position0: [f32; 2],
+    pub position1: [f32; 2],
+    pub position2: [f32; 2],
+    pub inner_color0: [f32; 4],
+    pub inner_color1: [f32; 4],
+    pub falloff_color0: [f32; 4],
+    pub falloff_color1: [f32; 4],
+    /// Decreasing falloff makes the nodes brightness more centered at the middle and increasing it makes it consistent.
+    pub falloff0: f32,
+    pub falloff1: f32,
+    pub falloff_radius0: f32,
+    pub falloff_radius1: f32,
+    pub inner_radius0: f32,
+    pub inner_radius1: f32,
+    pub accuracy: i32,
+}
+
+implement_vertex!(QBezier,
+                  position0,
+                  position1,
+                  position2,
+                  inner_color0,
+                  inner_color1,
+                  falloff0,
+                  falloff1,
+                  falloff_color0,
+                  falloff_color1,
+                  falloff_radius0,
+                  falloff_radius1,
+                  inner_radius0,
+                  inner_radius1,
+                  accuracy);
+
 pub struct Renderer<'a> {
     display: &'a glium::Display,
     node_program: glium::Program,
     edge_program: glium::Program,
+    qbezier_program: glium::Program,
     params: glium::DrawParameters<'a>,
 }
 
@@ -43,6 +81,11 @@ impl<'a> Renderer<'a> {
                                                       linear::VSHADER_SOURCE,
                                                       linear::FSHADER_SOURCE,
                                                       Some(linear::EDGE_GSHADER_SOURCE))
+                .unwrap(),
+            qbezier_program: glium::Program::from_source(display,
+                                                         qbezier::VSHADER_SOURCE,
+                                                         qbezier::FSHADER_SOURCE,
+                                                         Some(qbezier::GSHADER_SOURCE))
                 .unwrap(),
             params: glium::DrawParameters {
                 blend: glium::Blend::alpha_blending(),
@@ -76,6 +119,21 @@ impl<'a> Renderer<'a> {
         target.draw(&vertex_buffer,
                   &indices,
                   &self.edge_program,
+                  &glium::uniforms::EmptyUniforms,
+                  &self.params)
+            .unwrap();
+    }
+
+    /// Take a series of triangles (quadratic bezier curves) and draw them in parallel on the GPU.
+    pub fn render_qbeziers<S>(&self, target: &mut S, qbeziers: &[QBezier])
+        where S: Surface
+    {
+        let vertex_buffer = glium::VertexBuffer::new(self.display, qbeziers).unwrap();
+        let indices = glium::index::NoIndices(glium::index::PrimitiveType::Points);
+
+        target.draw(&vertex_buffer,
+                  &indices,
+                  &self.qbezier_program,
                   &glium::uniforms::EmptyUniforms,
                   &self.params)
             .unwrap();
