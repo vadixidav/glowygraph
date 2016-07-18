@@ -11,34 +11,30 @@ fn main() {
     use glium::DisplayBuild;
     let display = glium::glutin::WindowBuilder::new().with_vsync().build_glium().unwrap();
     let window = display.get_window().unwrap();
-    //window.set_cursor_state(glium::glutin::CursorState::Hide).ok().unwrap();
+    // window.set_cursor_state(glium::glutin::CursorState::Hide).ok().unwrap();
     let glowy = gg::Renderer::new(&display);
 
     let mut deps = petgraph::Graph::<[f32; 3], bool>::new();
-    let nodes = [
-        deps.add_node([-0.2, -0.3, 2.0]),
-        deps.add_node([0.4, 0.5, 5.0]),
-        deps.add_node([0.6, -0.7, 4.0]),
-        deps.add_node([-0.8, -0.9, 2.5]),
-        deps.add_node([0.1, 0.2, 3.0]),
-        deps.add_node([-0.3, 0.4, 3.0]),
-        deps.add_node([0.5, -0.6, 4.0]),
-    ];
+    let nodes = [deps.add_node([-0.2, -0.3, 2.0]),
+                 deps.add_node([0.4, 0.5, 5.0]),
+                 deps.add_node([0.6, -0.7, 4.0]),
+                 deps.add_node([-0.8, -0.9, 2.5]),
+                 deps.add_node([0.1, 0.2, 3.0]),
+                 deps.add_node([-0.3, 0.4, 3.0]),
+                 deps.add_node([0.5, -0.6, 4.0])];
 
-    deps.extend_with_edges(&[
-        (nodes[0], nodes[1]),
-        (nodes[1], nodes[2]),
-        (nodes[2], nodes[3]),
-        (nodes[3], nodes[4]),
-        (nodes[4], nodes[5]),
-        (nodes[5], nodes[6]),
-        (nodes[6], nodes[0]),
-    ]);
+    deps.extend_with_edges(&[(nodes[0], nodes[1]),
+                             (nodes[1], nodes[2]),
+                             (nodes[2], nodes[3]),
+                             (nodes[3], nodes[4]),
+                             (nodes[4], nodes[5]),
+                             (nodes[5], nodes[6]),
+                             (nodes[6], nodes[0])]);
 
-    //Set mouse cursor to middle
+    // Set mouse cursor to middle
     {
         let (dimx, dimy) = display.get_framebuffer_dimensions();
-        let (hdimx, hdimy) = (dimx/2, dimy/2);
+        let (hdimx, hdimy) = (dimx / 2, dimy / 2);
         window.set_cursor_position(hdimx as i32, hdimy as i32).ok().unwrap();
     }
 
@@ -60,66 +56,95 @@ fn main() {
 
         let matr = movement.to_homogeneous() * 3.0;
 
-        //Render nodes
-        glowy.render_nodes(&mut target, matr.as_ref(), &perspective,
-            &deps.node_weights_mut().map(|n|
-                gg::Node{position: n.clone(), color: [1.0, 0.0, 0.0, 1.0], falloff: 0.25, radius: 2.0}
-            ).collect::<Vec<_>>()[..]);
-
-        //Render edges
-        glowy.render_edges(
-            &mut target,
-            matr.as_ref(),
-            &perspective,
-            &deps.edge_indices().map(|e| deps.edge_endpoints(e)).flat_map(|n| {
-                    let indices = n.unwrap().clone();
-                    std::iter::once(gg::Node{
-                        position: deps.node_weight(indices.0).unwrap().clone(),
-                        color: [0.0, 1.0, 0.0, 1.0],
-                        falloff: 0.25,
-                        radius: 1.0,
-                    }).chain(
-                    std::iter::once(gg::Node{
-                        position: deps.node_weight(indices.1).unwrap().clone(),
-                        color: [0.0, 0.0, 1.0, 1.0],
-                        falloff: 0.25,
-                        radius: 3.0,
-                    }))
+        // Render nodes
+        glowy.render_nodes(&mut target,
+                           matr.as_ref(),
+                           &perspective,
+                           &deps.node_weights_mut()
+                               .map(|n| {
+                gg::Node3 {
+                    position: n.clone(),
+                    inner_color: [1.0, 0.0, 0.0, 1.0],
+                    falloff_color: [0.0, 0.0, 1.0, 1.0],
+                    falloff: 0.25,
+                    inner_radius: 1.0,
+                    falloff_radius: 1.0,
                 }
-            ).collect::<Vec<_>>()[..]
-        );
+            })
+                               .collect::<Vec<_>>()[..]);
+
+        // Render edges
+        glowy.render_edges(&mut target,
+                           matr.as_ref(),
+                           &perspective,
+                           &deps.edge_indices()
+                               .map(|e| deps.edge_endpoints(e))
+                               .flat_map(|n| {
+                let indices = n.unwrap().clone();
+                std::iter::once(gg::Node3 {
+                        position: deps.node_weight(indices.0).unwrap().clone(),
+                        inner_color: [0.0, 1.0, 0.0, 1.0],
+                        falloff_color: [1.0, 0.0, 0.0, 1.0],
+                        falloff: 0.25,
+                        inner_radius: 0.5,
+                        falloff_radius: 0.5,
+                    })
+                    .chain(std::iter::once(gg::Node3 {
+                        position: deps.node_weight(indices.1).unwrap().clone(),
+                        inner_color: [0.0, 0.0, 1.0, 1.0],
+                        falloff_color: [0.0, 1.0, 0.0, 1.0],
+                        falloff: 0.10,
+                        inner_radius: 1.5,
+                        falloff_radius: 1.5,
+                    }))
+            })
+                               .collect::<Vec<_>>()[..]);
 
         target.finish().unwrap();
 
         for ev in display.poll_events() {
             match ev {
                 glium::glutin::Event::Closed => return,
-                glium::glutin::Event::KeyboardInput(state, _, Some(glium::glutin::VirtualKeyCode::W)) => {
+                glium::glutin::Event::KeyboardInput(state,
+                                                    _,
+                                                    Some(glium::glutin::VirtualKeyCode::W)) => {
                     fdstate = state;
-                },
-                glium::glutin::Event::KeyboardInput(state, _, Some(glium::glutin::VirtualKeyCode::S)) => {
+                }
+                glium::glutin::Event::KeyboardInput(state,
+                                                    _,
+                                                    Some(glium::glutin::VirtualKeyCode::S)) => {
                     bkstate = state;
-                },
-                glium::glutin::Event::KeyboardInput(state, _, Some(glium::glutin::VirtualKeyCode::A)) => {
+                }
+                glium::glutin::Event::KeyboardInput(state,
+                                                    _,
+                                                    Some(glium::glutin::VirtualKeyCode::A)) => {
                     ltstate = state;
-                },
-                glium::glutin::Event::KeyboardInput(state, _, Some(glium::glutin::VirtualKeyCode::D)) => {
+                }
+                glium::glutin::Event::KeyboardInput(state,
+                                                    _,
+                                                    Some(glium::glutin::VirtualKeyCode::D)) => {
                     rtstate = state;
-                },
-                glium::glutin::Event::KeyboardInput(state, _, Some(glium::glutin::VirtualKeyCode::Q)) => {
+                }
+                glium::glutin::Event::KeyboardInput(state,
+                                                    _,
+                                                    Some(glium::glutin::VirtualKeyCode::Q)) => {
                     dnstate = state;
-                },
-                glium::glutin::Event::KeyboardInput(state, _, Some(glium::glutin::VirtualKeyCode::E)) => {
+                }
+                glium::glutin::Event::KeyboardInput(state,
+                                                    _,
+                                                    Some(glium::glutin::VirtualKeyCode::E)) => {
                     upstate = state;
-                },
-                glium::glutin::Event::MouseMoved((x, y)) => {
+                }
+                glium::glutin::Event::MouseMoved(x, y) => {
                     let (dimx, dimy) = display.get_framebuffer_dimensions();
-                    let (hdimx, hdimy) = (dimx/2, dimy/2);
-                    movement.append_rotation_mut(&na::Vec3::new(-(y - hdimy as i32) as f32 / 128.0,
-                        (x - hdimx as i32) as f32 / 128.0, 0.0));
+                    let (hdimx, hdimy) = (dimx / 2, dimy / 2);
+                    movement.append_rotation_mut(&na::Vec3::new(-(y - hdimy as i32) as f32 /
+                                                                128.0,
+                                                                (x - hdimx as i32) as f32 / 128.0,
+                                                                0.0));
                     window.set_cursor_position(hdimx as i32, hdimy as i32).ok().unwrap();
-                },
-                _ => ()
+                }
+                _ => (),
             }
         }
 
