@@ -96,6 +96,7 @@ static EDGE_GSHADER_SOURCE: &'static str = r#"
         vec4 first = gl_in[0].gl_Position;
         vec4 second = gl_in[1].gl_Position;
 
+        vec3 full_delta = 2 * normalize(second.xyz - first.xyz);
         vec2 net_delta = 2 * normalize(second.xy - first.xy);
 
         float radius;
@@ -121,7 +122,7 @@ static EDGE_GSHADER_SOURCE: &'static str = r#"
         ffalloff = gfalloff[0];
         radius = finner_radius + ffalloff_radius;
         delta = radius * net_delta;
-        gl_Position = projection * (first - vec4(delta, 0, 0));
+        gl_Position = projection * (first - vec4(radius * full_delta, 0));
         EmitVertex();
 
         //Vertex 2
@@ -221,7 +222,7 @@ static EDGE_GSHADER_SOURCE: &'static str = r#"
         ffalloff = gfalloff[1];
         radius = finner_radius + ffalloff_radius;
         delta = radius * net_delta;
-        gl_Position = projection * (second + vec4(delta, 0, 0));
+        gl_Position = projection * (second + vec4(radius * full_delta, 0));
         EmitVertex();
 
         //Vertex 3
