@@ -2,7 +2,7 @@ use glium::{self, Surface};
 
 static VSHADER_SOURCE: &'static str = r#"
     #version 150
-    in vec2 position;
+    in vec3 position;
     in vec4 inner_color;
     in vec4 falloff_color;
     in float falloff;
@@ -13,18 +13,21 @@ static VSHADER_SOURCE: &'static str = r#"
     out float gfalloff;
     out float gfalloff_radius;
     out float ginner_radius;
+    uniform mat4 modelview;
     void main() {
         ginner_color = inner_color;
         gfalloff_color = falloff_color;
         gfalloff = falloff;
         gfalloff_radius = falloff_radius;
         ginner_radius = inner_radius;
-        gl_Position = vec4(position, 0.0, 1.0);
+        gl_Position = modelview * vec4(position, 1.0);
     }
 "#;
 
 static NODE_GSHADER_SOURCE: &'static str = r#"
     #version 150
+
+    uniform mat4 projection;
 
     layout(points) in;
     layout(triangle_strip, max_vertices = 3) out;
@@ -47,25 +50,27 @@ static NODE_GSHADER_SOURCE: &'static str = r#"
         finner_radius = ginner_radius[0];
         ffalloff = gfalloff[0];
         ffalloff_radius = gfalloff_radius[0];
-        vec2 center = gl_in[0].gl_Position.xy;
+        vec4 center = gl_in[0].gl_Position;
         float full_radius = finner_radius + ffalloff_radius;
 
         delta = full_radius * vec2(0, 2);
-        gl_Position = vec4(center + delta, 0.0, 1.0);
+        gl_Position = projection * (center + vec4(delta, 0, 0));
         EmitVertex();
 
         delta = full_radius * vec2(-1.7320508075689, -1);
-        gl_Position = vec4(center + delta, 0.0, 1.0);
+        gl_Position = projection * (center + vec4(delta, 0, 0));
         EmitVertex();
 
         delta = full_radius * vec2(1.7320508075689, -1);
-        gl_Position = vec4(center + delta, 0.0, 1.0);
+        gl_Position = projection * (center + vec4(delta, 0, 0));
         EmitVertex();
     }
 "#;
 
 static EDGE_GSHADER_SOURCE: &'static str = r#"
     #version 150
+
+    uniform mat4 projection;
 
     layout(lines) in;
     layout(triangle_strip, max_vertices = 12) out;
@@ -83,10 +88,11 @@ static EDGE_GSHADER_SOURCE: &'static str = r#"
     out float ffalloff;
 
     void main() {
-        vec2 first = gl_in[0].gl_Position.xy;
-        vec2 second = gl_in[1].gl_Position.xy;
+        vec4 first = gl_in[0].gl_Position;
+        vec4 second = gl_in[1].gl_Position;
 
-        vec2 net_delta = 2 * normalize(second - first);
+        vec3 full_delta = 2 * normalize(second.xyz - first.xyz);
+        vec2 net_delta = 2 * normalize(second.xy - first.xy);
 
         float radius;
 
@@ -100,7 +106,7 @@ static EDGE_GSHADER_SOURCE: &'static str = r#"
         ffalloff = gfalloff[0];
         radius = finner_radius + ffalloff_radius;
         delta = radius * vec2(net_delta.y, -net_delta.x);
-        gl_Position = vec4(first - delta, 0.0, 1.0);
+        gl_Position = projection * (first - vec4(delta, 0, 0));
         EmitVertex();
 
         //Vertex 1
@@ -111,7 +117,7 @@ static EDGE_GSHADER_SOURCE: &'static str = r#"
         ffalloff = gfalloff[0];
         radius = finner_radius + ffalloff_radius;
         delta = radius * net_delta;
-        gl_Position = vec4(first - delta, 0.0, 1.0);
+        gl_Position = projection * (first - vec4(delta, 0, 0));
         EmitVertex();
 
         //Vertex 2
@@ -122,7 +128,7 @@ static EDGE_GSHADER_SOURCE: &'static str = r#"
         ffalloff = gfalloff[0];
         radius = finner_radius + ffalloff_radius;
         delta = radius * vec2(-net_delta.y, net_delta.x);
-        gl_Position = vec4(first - delta, 0.0, 1.0);
+        gl_Position = projection * (first - vec4(delta, 0, 0));
         EmitVertex();
 
         EndPrimitive();
@@ -137,7 +143,7 @@ static EDGE_GSHADER_SOURCE: &'static str = r#"
         ffalloff = gfalloff[0];
         radius = finner_radius + ffalloff_radius;
         delta = radius * vec2(net_delta.y, -net_delta.x);
-        gl_Position = vec4(first - delta, 0.0, 1.0);
+        gl_Position = projection * (first - vec4(delta, 0, 0));
         EmitVertex();
 
         //Vertex 2
@@ -148,7 +154,7 @@ static EDGE_GSHADER_SOURCE: &'static str = r#"
         ffalloff = gfalloff[0];
         radius = finner_radius + ffalloff_radius;
         delta = radius * vec2(-net_delta.y, net_delta.x);
-        gl_Position = vec4(first - delta, 0.0, 1.0);
+        gl_Position = projection * (first - vec4(delta, 0, 0));
         EmitVertex();
 
         //Vertex 3
@@ -159,7 +165,7 @@ static EDGE_GSHADER_SOURCE: &'static str = r#"
         ffalloff = gfalloff[1];
         radius = finner_radius + ffalloff_radius;
         delta = radius * vec2(net_delta.y, -net_delta.x);
-        gl_Position = vec4(second - delta, 0.0, 1.0);
+        gl_Position = projection * (second - vec4(delta, 0, 0));
         EmitVertex();
 
         EndPrimitive();
@@ -174,7 +180,7 @@ static EDGE_GSHADER_SOURCE: &'static str = r#"
         ffalloff = gfalloff[0];
         radius = finner_radius + ffalloff_radius;
         delta = radius * vec2(-net_delta.y, net_delta.x);
-        gl_Position = vec4(first - delta, 0.0, 1.0);
+        gl_Position = projection * (first - vec4(delta, 0, 0));
         EmitVertex();
 
         //Vertex 4
@@ -185,7 +191,7 @@ static EDGE_GSHADER_SOURCE: &'static str = r#"
         ffalloff = gfalloff[1];
         radius = finner_radius + ffalloff_radius;
         delta = radius * vec2(-net_delta.y, net_delta.x);
-        gl_Position = vec4(second - delta, 0.0, 1.0);
+        gl_Position = projection * (second - vec4(delta, 0, 0));
         EmitVertex();
 
         //Vertex 3
@@ -196,7 +202,7 @@ static EDGE_GSHADER_SOURCE: &'static str = r#"
         ffalloff = gfalloff[1];
         radius = finner_radius + ffalloff_radius;
         delta = radius * vec2(net_delta.y, -net_delta.x);
-        gl_Position = vec4(second - delta, 0.0, 1.0);
+        gl_Position = projection * (second - vec4(delta, 0, 0));
         EmitVertex();
 
         EndPrimitive();
@@ -211,7 +217,7 @@ static EDGE_GSHADER_SOURCE: &'static str = r#"
         ffalloff = gfalloff[1];
         radius = finner_radius + ffalloff_radius;
         delta = radius * net_delta;
-        gl_Position = vec4(second + delta, 0.0, 1.0);
+        gl_Position = projection * (second + vec4(delta, 0, 0));
         EmitVertex();
 
         //Vertex 3
@@ -222,7 +228,7 @@ static EDGE_GSHADER_SOURCE: &'static str = r#"
         ffalloff = gfalloff[1];
         radius = finner_radius + ffalloff_radius;
         delta = radius * vec2(net_delta.y, -net_delta.x);
-        gl_Position = vec4(second - delta, 0.0, 1.0);
+        gl_Position = projection * (second - vec4(delta, 0, 0));
         EmitVertex();
 
         //Vertex 4
@@ -233,7 +239,7 @@ static EDGE_GSHADER_SOURCE: &'static str = r#"
         ffalloff = gfalloff[1];
         radius = finner_radius + ffalloff_radius;
         delta = radius * vec2(-net_delta.y, net_delta.x);
-        gl_Position = vec4(second - delta, 0.0, 1.0);
+        gl_Position = projection * (second - vec4(delta, 0, 0));
         EmitVertex();
 
         EndPrimitive();
@@ -254,7 +260,7 @@ static FSHADER_SOURCE: &'static str = r#"
         if (length <= finner_radius) {
             float travel = length / finner_radius;
             // Manually interpolate the inner color into the falloff color.
-            color = finner_color * (1.0 - travel) + ffalloff_color * travel;
+            color = finner_color * (1 - travel) + ffalloff_color * travel;
         } else {
             color = vec4(ffalloff_color.xyz,
                 ffalloff_color.a * max(0.0, 1.0 - pow((length - finner_radius) / ffalloff_radius, ffalloff)));
@@ -264,8 +270,8 @@ static FSHADER_SOURCE: &'static str = r#"
 
 /// Node is used to pass nodes into the renderer.
 #[derive(Copy, Clone)]
-pub struct Node2 {
-    pub position: [f32; 2],
+pub struct Node {
+    pub position: [f32; 3],
     pub inner_color: [f32; 4],
     /// Decreasing falloff makes the nodes brightness more centered at the middle and increasing it makes it consistent.
     pub falloff: f32,
@@ -274,7 +280,7 @@ pub struct Node2 {
     pub inner_radius: f32,
 }
 
-implement_vertex!(Node2,
+implement_vertex!(Node,
                   position,
                   inner_color,
                   falloff,
@@ -282,7 +288,7 @@ implement_vertex!(Node2,
                   falloff_radius,
                   inner_radius);
 
-pub struct Renderer2<'a> {
+pub struct Renderer<'a> {
     display: &'a glium::Display,
     node_program: glium::Program,
     edge_program: glium::Program,
@@ -290,10 +296,10 @@ pub struct Renderer2<'a> {
 }
 
 /// A Renderer is tied to the lifetime of the glium Display and making one builds a GLSL program internally.
-impl<'a> Renderer2<'a> {
+impl<'a> Renderer<'a> {
     /// Make a new Renderer from a glium::Display.
     pub fn new(display: &'a glium::Display) -> Self {
-        Renderer2 {
+        Renderer {
             display: display,
             node_program: glium::Program::from_source(display,
                                                       VSHADER_SOURCE,
@@ -312,32 +318,48 @@ impl<'a> Renderer2<'a> {
         }
     }
 
-    /// Take a series of nodes and draw them in parallel on the GPU.
-    pub fn render_nodes<S>(&self, target: &mut S, nodes: &[Node2])
+    /// Take a modelview matrix, projection matrix, and a series of nodes and draw them in parallel on the GPU.
+    pub fn render_nodes<S>(&self,
+                           target: &mut S,
+                           modelview: &[[f32; 4]; 4],
+                           projection: &[[f32; 4]; 4],
+                           nodes: &[Node])
         where S: Surface
     {
         let vertex_buffer = glium::VertexBuffer::new(self.display, nodes).unwrap();
         let indices = glium::index::NoIndices(glium::index::PrimitiveType::Points);
 
+        let uniforms = uniform! {
+            modelview: *modelview,
+            projection: *projection,
+        };
         target.draw(&vertex_buffer,
                   &indices,
                   &self.node_program,
-                  &glium::uniforms::EmptyUniforms,
+                  &uniforms,
                   &self.params)
             .unwrap();
     }
 
-    /// Take a series of lines (edges) and draw them in parallel on the GPU.
-    pub fn render_edges<S>(&self, target: &mut S, edges: &[Node2])
+    /// Take a modelview matrix, projection matrix, and a series of lines (edges) and draw them in parallel on the GPU.
+    pub fn render_edges<S>(&self,
+                           target: &mut S,
+                           modelview: &[[f32; 4]; 4],
+                           projection: &[[f32; 4]; 4],
+                           edges: &[Node])
         where S: Surface
     {
         let vertex_buffer = glium::VertexBuffer::new(self.display, edges).unwrap();
         let indices = glium::index::NoIndices(glium::index::PrimitiveType::LinesList);
 
+        let uniforms = uniform! {
+            modelview: *modelview,
+            projection: *projection,
+        };
         target.draw(&vertex_buffer,
                   &indices,
                   &self.edge_program,
-                  &glium::uniforms::EmptyUniforms,
+                  &uniforms,
                   &self.params)
             .unwrap();
     }

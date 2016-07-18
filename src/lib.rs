@@ -3,7 +3,5 @@ extern crate glium;
 extern crate num;
 extern crate nalgebra as na;
 
-mod render2;
-pub use render2::*;
-mod render3;
-pub use render3::*;
+pub mod render2;
+pub mod render3;

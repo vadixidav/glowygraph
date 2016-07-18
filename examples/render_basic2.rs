@@ -4,11 +4,13 @@ extern crate glium;
 extern crate num;
 extern crate nalgebra as na;
 
+use gg::render2::*;
+
 fn main() {
     use glium::DisplayBuild;
     let display = glium::glutin::WindowBuilder::new().with_vsync().build_glium().unwrap();
     // window.set_cursor_state(glium::glutin::CursorState::Hide).ok().unwrap();
-    let glowy = gg::Renderer2::new(&display);
+    let glowy = Renderer::new(&display);
 
     let mut deps = petgraph::Graph::<[f32; 2], bool>::new();
     let nodes = [deps.add_node([-0.2, -0.3]),
@@ -37,7 +39,7 @@ fn main() {
         glowy.render_nodes(&mut target,
                            &deps.node_weights_mut()
                                .map(|n| {
-                gg::Node2 {
+                Node {
                     position: n.clone(),
                     inner_color: [1.0, 0.0, 0.0, 1.0],
                     falloff_color: [0.0, 0.0, 1.0, 1.0],
@@ -54,7 +56,7 @@ fn main() {
                                .map(|e| deps.edge_endpoints(e))
                                .flat_map(|n| {
                 let indices = n.unwrap().clone();
-                std::iter::once(gg::Node2 {
+                std::iter::once(Node {
                         position: deps.node_weight(indices.0).unwrap().clone(),
                         inner_color: [0.0, 1.0, 0.0, 1.0],
                         falloff_color: [1.0, 0.0, 0.0, 1.0],
@@ -62,7 +64,7 @@ fn main() {
                         inner_radius: 0.05,
                         falloff_radius: 0.1,
                     })
-                    .chain(std::iter::once(gg::Node2 {
+                    .chain(std::iter::once(Node {
                         position: deps.node_weight(indices.1).unwrap().clone(),
                         inner_color: [0.0, 0.0, 1.0, 1.0],
                         falloff_color: [0.0, 1.0, 0.0, 1.0],

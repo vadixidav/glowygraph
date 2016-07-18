@@ -6,13 +6,14 @@ extern crate nalgebra as na;
 
 use na::{ToHomogeneous, Translation, Rotation};
 use num::traits::One;
+use gg::render3::*;
 
 fn main() {
     use glium::DisplayBuild;
     let display = glium::glutin::WindowBuilder::new().with_vsync().build_glium().unwrap();
     let window = display.get_window().unwrap();
     // window.set_cursor_state(glium::glutin::CursorState::Hide).ok().unwrap();
-    let glowy = gg::Renderer3::new(&display);
+    let glowy = Renderer::new(&display);
 
     let mut deps = petgraph::Graph::<[f32; 3], bool>::new();
     let nodes = [deps.add_node([-0.2, -0.3, 2.0]),
@@ -62,7 +63,7 @@ fn main() {
                            &perspective,
                            &deps.node_weights_mut()
                                .map(|n| {
-                gg::Node3 {
+                Node {
                     position: n.clone(),
                     inner_color: [1.0, 0.0, 0.0, 1.0],
                     falloff_color: [0.0, 0.0, 1.0, 1.0],
@@ -81,7 +82,7 @@ fn main() {
                                .map(|e| deps.edge_endpoints(e))
                                .flat_map(|n| {
                 let indices = n.unwrap().clone();
-                std::iter::once(gg::Node3 {
+                std::iter::once(Node {
                         position: deps.node_weight(indices.0).unwrap().clone(),
                         inner_color: [0.0, 1.0, 0.0, 1.0],
                         falloff_color: [1.0, 0.0, 0.0, 1.0],
@@ -89,7 +90,7 @@ fn main() {
                         inner_radius: 0.5,
                         falloff_radius: 0.5,
                     })
-                    .chain(std::iter::once(gg::Node3 {
+                    .chain(std::iter::once(Node {
                         position: deps.node_weight(indices.1).unwrap().clone(),
                         inner_color: [0.0, 0.0, 1.0, 1.0],
                         falloff_color: [0.0, 1.0, 0.0, 1.0],
