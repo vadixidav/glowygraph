@@ -12,7 +12,7 @@ fn main() {
     let display = glium::glutin::WindowBuilder::new().with_vsync().build_glium().unwrap();
     let window = display.get_window().unwrap();
     // window.set_cursor_state(glium::glutin::CursorState::Hide).ok().unwrap();
-    let glowy = gg::Renderer::new(&display);
+    let glowy = gg::Renderer3::new(&display);
 
     let mut deps = petgraph::Graph::<[f32; 3], bool>::new();
     let nodes = [deps.add_node([-0.2, -0.3, 2.0]),
