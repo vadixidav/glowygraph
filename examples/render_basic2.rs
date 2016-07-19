@@ -1,7 +1,5 @@
 extern crate glowygraph as gg;
 extern crate glium;
-extern crate num;
-extern crate nalgebra as na;
 
 use gg::render2::*;
 

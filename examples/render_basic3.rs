@@ -1,8 +1,7 @@
 extern crate glowygraph as gg;
-extern crate petgraph;
 extern crate glium;
-extern crate num;
 extern crate nalgebra as na;
+extern crate num;
 
 use na::{ToHomogeneous, Translation, Rotation};
 use num::traits::One;
@@ -15,22 +14,16 @@ fn main() {
     // window.set_cursor_state(glium::glutin::CursorState::Hide).ok().unwrap();
     let glowy = Renderer::new(&display);
 
-    let mut deps = petgraph::Graph::<[f32; 3], bool>::new();
-    let nodes = [deps.add_node([-0.2, -0.3, 2.0]),
-                 deps.add_node([0.4, 0.5, 5.0]),
-                 deps.add_node([0.6, -0.7, 4.0]),
-                 deps.add_node([-0.8, -0.9, 2.5]),
-                 deps.add_node([0.1, 0.2, 3.0]),
-                 deps.add_node([-0.3, 0.4, 3.0]),
-                 deps.add_node([0.5, -0.6, 4.0])];
+    let nodes = vec![[-0.2, -0.3, 2.0],
+                     [0.4, 0.5, 5.0],
+                     [0.6, -0.7, 4.0],
+                     [-0.8, -0.9, 2.5],
+                     [0.1, 0.2, 3.0],
+                     [-0.3, 0.4, 3.0],
+                     [0.5, -0.6, 4.0]];
 
-    deps.extend_with_edges(&[(nodes[0], nodes[1]),
-                             (nodes[1], nodes[2]),
-                             (nodes[2], nodes[3]),
-                             (nodes[3], nodes[4]),
-                             (nodes[4], nodes[5]),
-                             (nodes[5], nodes[6]),
-                             (nodes[6], nodes[0])]);
+    let edges = vec![([0.198476, -0.19746, 6.9781234], [-0.198476, -0.19746, 2.9781234]),
+                     ([0.715482, 0.1784692, 5.7615471], [-0.1824612, -0.7813652, 3.825643])];
 
     // Set mouse cursor to middle
     {
@@ -61,7 +54,7 @@ fn main() {
         glowy.render_nodes(&mut target,
                            matr.as_ref(),
                            &perspective,
-                           &deps.node_weights_mut()
+                           &nodes.iter()
                                .map(|n| {
                 Node {
                     position: n.clone(),
@@ -78,12 +71,10 @@ fn main() {
         glowy.render_edges(&mut target,
                            matr.as_ref(),
                            &perspective,
-                           &deps.edge_indices()
-                               .map(|e| deps.edge_endpoints(e))
-                               .flat_map(|n| {
-                let indices = n.unwrap().clone();
+                           &edges.iter()
+                               .flat_map(|indices| {
                 std::iter::once(Node {
-                        position: deps.node_weight(indices.0).unwrap().clone(),
+                        position: indices.0,
                         inner_color: [0.0, 1.0, 0.0, 1.0],
                         falloff_color: [1.0, 0.0, 0.0, 1.0],
                         falloff: 0.25,
@@ -91,7 +82,7 @@ fn main() {
                         falloff_radius: 0.5,
                     })
                     .chain(std::iter::once(Node {
-                        position: deps.node_weight(indices.1).unwrap().clone(),
+                        position: indices.1,
                         inner_color: [0.0, 0.0, 1.0, 1.0],
                         falloff_color: [0.0, 1.0, 0.0, 1.0],
                         falloff: 0.10,
