@@ -45,7 +45,6 @@ pub static VSHADER_SOURCE: &'static str = r#"
         ginner_radius0 = inner_radius0;
         ginner_radius1 = inner_radius1;
         gaccuracy = accuracy;
-        gl_Position = vec4(0.0, 0.0, 0.0, 1.0);
     }
 "#;
 
@@ -53,7 +52,7 @@ pub static GSHADER_SOURCE: &'static str = r#"
     #version 150
 
     layout(points) in;
-    layout(triangle_strip, max_vertices = 9) out;
+    layout(triangle_strip, max_vertices = 5) out;
 
     in vec2 gposition0[1];
     in vec2 gposition1[1];
@@ -70,23 +69,26 @@ pub static GSHADER_SOURCE: &'static str = r#"
     in float ginner_radius1[1];
     in int gaccuracy[1];
 
-    out vec2 fposition0;
-    out vec2 fposition1;
-    out vec2 fposition2;
-    out vec4 finner_color0;
-    out vec4 finner_color1;
-    out float ffalloff0;
-    out float ffalloff1;
-    out vec4 ffalloff_color0;
-    out vec4 ffalloff_color1;
-    out float ffalloff_radius0;
-    out float ffalloff_radius1;
-    out float finner_radius0;
-    out float finner_radius1;
+    flat out vec2 fposition0;
+    flat out vec2 fposition1;
+    flat out vec2 fposition2;
+    flat out vec4 finner_color0;
+    flat out vec4 finner_color1;
+    flat out float ffalloff0;
+    flat out float ffalloff1;
+    flat out vec4 ffalloff_color0;
+    flat out vec4 ffalloff_color1;
+    flat out float ffalloff_radius0;
+    flat out float ffalloff_radius1;
+    flat out float finner_radius0;
+    flat out float finner_radius1;
     out vec2 realpos;
     flat out int faccuracy;
 
     void main() {
+        fposition0 = gposition0[0];
+        fposition1 = gposition1[0];
+        fposition2 = gposition2[0];
         finner_color0 = ginner_color0[0];
         finner_color1 = ginner_color1[0];
         ffalloff0 = gfalloff0[0];
@@ -111,72 +113,50 @@ pub static GSHADER_SOURCE: &'static str = r#"
         float radius2 = finner_radius1 + ffalloff_radius1;
         float radius1 = (radius0 + radius2) * 0.5;
 
-        vec4 e0 = vec4(gposition0[0] + radius0 * vec2(b0.y, -b0.x), 0.0, 1.0);
-        vec4 e1 = vec4(gposition0[0] + radius0 * vec2(-b0.y, b0.x), 0.0, 1.0);
-        vec4 e2 = vec4(gposition1[0] + radius1 * b1, 0.0, 1.0);
-        vec4 e3 = vec4(gposition2[0] + radius2 * vec2(b2.y, -b2.x), 0.0, 1.0);
-        vec4 e4 = vec4(gposition2[0] + radius2 * vec2(-b2.y, b2.x), 0.0, 1.0);
+        vec2 e0 = gposition0[0] + radius0 * vec2(b0.y, -b0.x);
+        vec2 e1 = gposition0[0] + radius0 * vec2(-b0.y, b0.x);
+        vec2 e2 = gposition1[0] + radius1 * b1;
+        vec2 e3 = gposition2[0] + radius2 * vec2(b2.y, -b2.x);
+        vec2 e4 = gposition2[0] + radius2 * vec2(-b2.y, b2.x);
 
-        gl_Position = e2;
-        realpos = e2.xy;
+        gl_Position = vec4(e1, 0.0, 1.0);
+        realpos = e1;
         EmitVertex();
 
-        gl_Position = e1;
-        realpos = e1.xy;
+        gl_Position = vec4(e0, 0.0, 1.0);
+        realpos = e0;
         EmitVertex();
 
-        gl_Position = e0;
-        realpos = e0.xy;
+        gl_Position = vec4(e2, 0.0, 1.0);
+        realpos = e2;
         EmitVertex();
 
-        EndPrimitive();
-
-        gl_Position = e2;
-        realpos = e2.xy;
+        gl_Position = vec4(e4, 0.0, 1.0);
+        realpos = e4;
         EmitVertex();
 
-        gl_Position = e0;
-        realpos = e0.xy;
+        gl_Position = vec4(e3, 0.0, 1.0);
+        realpos = e3;
         EmitVertex();
-
-        gl_Position = e4;
-        realpos = e4.xy;
-        EmitVertex();
-
-        EndPrimitive();
-
-        gl_Position = e2;
-        realpos = e2.xy;
-        EmitVertex();
-
-        gl_Position = e4;
-        realpos = e4.xy;
-        EmitVertex();
-
-        gl_Position = e3;
-        realpos = e3.xy;
-        EmitVertex();
-
-        EndPrimitive();
     }
 "#;
 
 pub static FSHADER_SOURCE: &'static str = r#"
     #version 150
 
-    in vec2 fposition0;
-    in vec2 fposition1;
-    in vec2 fposition2;
-    in vec4 finner_color0;
-    in vec4 finner_color1;
-    in float ffalloff0;
-    in float ffalloff1;
-    in vec4 ffalloff_color0;
-    in vec4 ffalloff_color1;
-    in float ffalloff_radius0;
-    in float ffalloff_radius1;
-    in float finner_radius0;
-    in float finner_radius1;
+    flat in vec2 fposition0;
+    flat in vec2 fposition1;
+    flat in vec2 fposition2;
+    flat in vec4 finner_color0;
+    flat in vec4 finner_color1;
+    flat in float ffalloff0;
+    flat in float ffalloff1;
+    flat in vec4 ffalloff_color0;
+    flat in vec4 ffalloff_color1;
+    flat in float ffalloff_radius0;
+    flat in float ffalloff_radius1;
+    flat in float finner_radius0;
+    flat in float finner_radius1;
     in vec2 realpos;
     flat in int faccuracy;
 
