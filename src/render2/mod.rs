@@ -39,7 +39,6 @@ pub struct QBezier {
     pub falloff_radius1: f32,
     pub inner_radius0: f32,
     pub inner_radius1: f32,
-    pub accuracy: i32,
 }
 
 implement_vertex!(QBezier,
@@ -55,8 +54,7 @@ implement_vertex!(QBezier,
                   falloff_radius0,
                   falloff_radius1,
                   inner_radius0,
-                  inner_radius1,
-                  accuracy);
+                  inner_radius1);
 
 pub struct Renderer<'a> {
     display: &'a glium::Display,
