@@ -6,7 +6,7 @@ documentation = "https://vadixidav.github.io/glowygraph/glowygraph/"
 repository = "https://github.com/vadixidav/glowygraph"
 authors = ["Geordon Worley <vadixidav@gmail.com>"]
 keywords = ["graph", "glow", "glowy", "render", "draw"]
-license = "BSD-2-Clause"
+license = "Unlicense"
 
 [dependencies]
 glium = "0.14.0"
