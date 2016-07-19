@@ -83,6 +83,7 @@ pub static GSHADER_SOURCE: &'static str = r#"
     out float ffalloff_radius1;
     out float finner_radius0;
     out float finner_radius1;
+    out vec2 realpos;
     flat out int faccuracy;
 
     void main() {
@@ -117,34 +118,43 @@ pub static GSHADER_SOURCE: &'static str = r#"
         vec4 e4 = vec4(gposition2[0] + radius2 * vec2(-b2.y, b2.x), 0.0, 1.0);
 
         gl_Position = e2;
+        realpos = e2.xy;
         EmitVertex();
 
         gl_Position = e1;
+        realpos = e1.xy;
         EmitVertex();
 
         gl_Position = e0;
+        realpos = e0.xy;
         EmitVertex();
 
         EndPrimitive();
 
         gl_Position = e2;
+        realpos = e2.xy;
         EmitVertex();
 
         gl_Position = e0;
+        realpos = e0.xy;
         EmitVertex();
 
         gl_Position = e4;
+        realpos = e4.xy;
         EmitVertex();
 
         EndPrimitive();
 
         gl_Position = e2;
+        realpos = e2.xy;
         EmitVertex();
 
         gl_Position = e4;
+        realpos = e4.xy;
         EmitVertex();
 
         gl_Position = e3;
+        realpos = e3.xy;
         EmitVertex();
 
         EndPrimitive();
@@ -167,6 +177,7 @@ pub static FSHADER_SOURCE: &'static str = r#"
     in float ffalloff_radius1;
     in float finner_radius0;
     in float finner_radius1;
+    in vec2 realpos;
     flat in int faccuracy;
 
     out vec4 color;
@@ -177,8 +188,8 @@ pub static FSHADER_SOURCE: &'static str = r#"
         float best_begin_t = 0.0;
         float best_end_t = 1.0;
 
-        float beginning_distance = length(fposition0 - gl_FragCoord.xy);
-        float ending_distance = length(fposition2 - gl_FragCoord.xy);
+        float beginning_distance = length(fposition0 - realpos);
+        float ending_distance = length(fposition2 - realpos);
         if (beginning_distance < ending_distance) {
             best_begin = true;
             best_distance = beginning_distance;
@@ -194,7 +205,7 @@ pub static FSHADER_SOURCE: &'static str = r#"
                 pow(1.0 - middle_t, 2) * fposition0 +
                 2.0 * middle_t * (1.0 - middle_t) * fposition1 +
                 pow(middle_t, 2) * fposition2 -
-                gl_FragCoord.xy);
+                realpos);
 
             if (distance < best_distance) {
                 if (best_begin) {
@@ -204,6 +215,12 @@ pub static FSHADER_SOURCE: &'static str = r#"
                 } else {
                     best_begin = true;
                     best_distance = distance;
+                    best_begin_t = middle_t;
+                }
+            } else {
+                if (best_begin) {
+                    best_end_t = middle_t;
+                } else {
                     best_begin_t = middle_t;
                 }
             }

@@ -31,19 +31,19 @@ fn main() {
 
     let qbeziers = vec![QBezier {
                             position0: [-0.9, -0.9],
-                            position1: [0.9, 0.0],
-                            position2: [0.9, 0.0],
+                            position1: [0.0, 0.9],
+                            position2: [0.9, -0.9],
                             inner_color0: [1.0, 0.0, 0.0, 1.0],
                             inner_color1: [0.0, 0.0, 1.0, 1.0],
                             falloff_color0: [0.0, 1.0, 0.0, 1.0],
                             falloff_color1: [1.0, 0.0, 0.0, 1.0],
                             falloff0: 0.25,
                             falloff1: 0.8,
-                            falloff_radius0: 0.2,
+                            falloff_radius0: 0.02,
                             falloff_radius1: 0.05,
                             inner_radius0: 0.05,
-                            inner_radius1: 0.3,
-                            accuracy: 8,
+                            inner_radius1: 0.03,
+                            accuracy: 128,
                         }];
 
     loop {
@@ -53,44 +53,46 @@ fn main() {
         target.clear_color(0.0, 0.0, 0.0, 1.0);
 
         // Render nodes
-        /*glowy.render_nodes(&mut target,
-                           &deps.node_weights_mut()
-                               .map(|n| {
-                Node {
-                    position: n.clone(),
-                    inner_color: [1.0, 0.0, 0.0, 1.0],
-                    falloff_color: [0.0, 0.0, 1.0, 1.0],
-                    falloff: 0.25,
-                    inner_radius: 0.05,
-                    falloff_radius: 0.1,
-                }
-            })
-                               .collect::<Vec<_>>()[..]);
+        // glowy.render_nodes(&mut target,
+        // &deps.node_weights_mut()
+        // .map(|n| {
+        // Node {
+        // position: n.clone(),
+        // inner_color: [1.0, 0.0, 0.0, 1.0],
+        // falloff_color: [0.0, 0.0, 1.0, 1.0],
+        // falloff: 0.25,
+        // inner_radius: 0.05,
+        // falloff_radius: 0.1,
+        // }
+        // })
+        // .collect::<Vec<_>>()[..]);
+
 
         // Render edges
-        glowy.render_edges(&mut target,
-                           &deps.edge_indices()
-                               .map(|e| deps.edge_endpoints(e))
-                               .flat_map(|n| {
-                let indices = n.unwrap().clone();
-                std::iter::once(Node {
-                        position: deps.node_weight(indices.0).unwrap().clone(),
-                        inner_color: [0.0, 1.0, 0.0, 1.0],
-                        falloff_color: [1.0, 0.0, 0.0, 1.0],
-                        falloff: 0.25,
-                        inner_radius: 0.05,
-                        falloff_radius: 0.1,
-                    })
-                    .chain(std::iter::once(Node {
-                        position: deps.node_weight(indices.1).unwrap().clone(),
-                        inner_color: [0.0, 0.0, 1.0, 1.0],
-                        falloff_color: [0.0, 1.0, 0.0, 1.0],
-                        falloff: 0.10,
-                        inner_radius: 0.1,
-                        falloff_radius: 0.05,
-                    }))
-            })
-                               .collect::<Vec<_>>()[..]);*/
+        // glowy.render_edges(&mut target,
+        // &deps.edge_indices()
+        // .map(|e| deps.edge_endpoints(e))
+        // .flat_map(|n| {
+        // let indices = n.unwrap().clone();
+        // std::iter::once(Node {
+        // position: deps.node_weight(indices.0).unwrap().clone(),
+        // inner_color: [0.0, 1.0, 0.0, 1.0],
+        // falloff_color: [1.0, 0.0, 0.0, 1.0],
+        // falloff: 0.25,
+        // inner_radius: 0.05,
+        // falloff_radius: 0.1,
+        // })
+        // .chain(std::iter::once(Node {
+        // position: deps.node_weight(indices.1).unwrap().clone(),
+        // inner_color: [0.0, 0.0, 1.0, 1.0],
+        // falloff_color: [0.0, 1.0, 0.0, 1.0],
+        // falloff: 0.10,
+        // inner_radius: 0.1,
+        // falloff_radius: 0.05,
+        // }))
+        // })
+        // .collect::<Vec<_>>()[..]);
+
 
         // Render nodes
         glowy.render_qbeziers(&mut target, &qbeziers);
