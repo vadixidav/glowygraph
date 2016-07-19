@@ -22,7 +22,7 @@ implement_vertex!(Node,
                   falloff_radius,
                   inner_radius);
 
-/// Node is used to pass nodes into the renderer.
+/// QBezier is used to pass a quadratic bezier curve into the shader with interpolating values.
 #[derive(Copy, Clone)]
 pub struct QBezier {
     pub position0: [f32; 2],
