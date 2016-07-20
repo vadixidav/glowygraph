@@ -60,7 +60,8 @@ pub struct Renderer<'a> {
     display: &'a glium::Display,
     node_program: glium::Program,
     edge_program: glium::Program,
-    qbezier_program: glium::Program,
+    round_qbezier_program: glium::Program,
+    flat_qbezier_program: glium::Program,
     params: glium::DrawParameters<'a>,
 }
 
@@ -80,10 +81,15 @@ impl<'a> Renderer<'a> {
                                                       linear::FSHADER_SOURCE,
                                                       Some(linear::EDGE_GSHADER_SOURCE))
                 .unwrap(),
-            qbezier_program: glium::Program::from_source(display,
-                                                         qbezier::VSHADER_SOURCE,
-                                                         qbezier::FSHADER_SOURCE,
-                                                         Some(qbezier::GSHADER_SOURCE))
+            round_qbezier_program: glium::Program::from_source(display,
+                                                               qbezier::VSHADER_SOURCE,
+                                                               qbezier::FSHADER_SOURCE,
+                                                               Some(qbezier::GSHADER_SOURCE_ROUND))
+                .unwrap(),
+            flat_qbezier_program: glium::Program::from_source(display,
+                                                              qbezier::VSHADER_SOURCE,
+                                                              qbezier::FSHADER_SOURCE,
+                                                              Some(qbezier::GSHADER_SOURCE_FLAT))
                 .unwrap(),
             params: glium::DrawParameters {
                 blend: glium::Blend::alpha_blending(),
@@ -181,7 +187,7 @@ impl<'a> Renderer<'a> {
 
         target.draw(&vertex_buffer,
                   &indices,
-                  &self.qbezier_program,
+                  &self.round_qbezier_program,
                   &uniforms,
                   &self.params)
             .unwrap();
@@ -200,7 +206,49 @@ impl<'a> Renderer<'a> {
 
         target.draw(&vertex_buffer,
                   &indices,
-                  &self.qbezier_program,
+                  &self.round_qbezier_program,
+                  &uniforms,
+                  &self.params)
+            .unwrap();
+    }
+
+    /// Take a series of triangles (quadratic bezier curves) and draw them in parallel on the GPU.
+    ///
+    /// A flat qbezier has a flat end so it can be connected with another bezier curve.
+    pub fn render_flat_qbeziers<S>(&self, target: &mut S, qbeziers: &[QBezier])
+        where S: Surface
+    {
+        let vertex_buffer = glium::VertexBuffer::new(self.display, qbeziers).unwrap();
+        let indices = glium::index::NoIndices(glium::index::PrimitiveType::Points);
+
+        let uniforms = uniform! {
+            hscale: 1.0f32,
+        };
+
+        target.draw(&vertex_buffer,
+                  &indices,
+                  &self.flat_qbezier_program,
+                  &uniforms,
+                  &self.params)
+            .unwrap();
+    }
+
+    /// Take a series of triangles (quadratic bezier curves) and draw them in parallel on the GPU.
+    ///
+    /// A flat qbezier has a flat end so it can be connected with another bezier curve.
+    pub fn render_flat_qbeziers_hscale<S>(&self, target: &mut S, hscale: f32, qbeziers: &[QBezier])
+        where S: Surface
+    {
+        let vertex_buffer = glium::VertexBuffer::new(self.display, qbeziers).unwrap();
+        let indices = glium::index::NoIndices(glium::index::PrimitiveType::Points);
+
+        let uniforms = uniform! {
+            hscale: hscale,
+        };
+
+        target.draw(&vertex_buffer,
+                  &indices,
+                  &self.flat_qbezier_program,
                   &uniforms,
                   &self.params)
             .unwrap();

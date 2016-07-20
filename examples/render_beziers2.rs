@@ -56,7 +56,7 @@ fn main() {
         target.clear_color(0.0, 0.0, 0.0, 1.0);
 
         // Render nodes
-        glowy.render_qbeziers_hscale(&mut target, hscale, &qbeziers);
+        glowy.render_flat_qbeziers_hscale(&mut target, hscale, &qbeziers);
 
         target.finish().unwrap();
 
