@@ -99,10 +99,33 @@ impl<'a> Renderer<'a> {
         let vertex_buffer = glium::VertexBuffer::new(self.display, nodes).unwrap();
         let indices = glium::index::NoIndices(glium::index::PrimitiveType::Points);
 
+        let uniforms = uniform! {
+            hscale: 1.0f32,
+        };
+
         target.draw(&vertex_buffer,
                   &indices,
                   &self.node_program,
-                  &glium::uniforms::EmptyUniforms,
+                  &uniforms,
+                  &self.params)
+            .unwrap();
+    }
+
+    /// Take a series of nodes and draw them in parallel on the GPU.
+    pub fn render_nodes_hscale<S>(&self, target: &mut S, hscale: f32, nodes: &[Node])
+        where S: Surface
+    {
+        let vertex_buffer = glium::VertexBuffer::new(self.display, nodes).unwrap();
+        let indices = glium::index::NoIndices(glium::index::PrimitiveType::Points);
+
+        let uniforms = uniform! {
+            hscale: hscale,
+        };
+
+        target.draw(&vertex_buffer,
+                  &indices,
+                  &self.node_program,
+                  &uniforms,
                   &self.params)
             .unwrap();
     }
@@ -114,10 +137,33 @@ impl<'a> Renderer<'a> {
         let vertex_buffer = glium::VertexBuffer::new(self.display, edges).unwrap();
         let indices = glium::index::NoIndices(glium::index::PrimitiveType::LinesList);
 
+        let uniforms = uniform! {
+            hscale: 1.0f32,
+        };
+
         target.draw(&vertex_buffer,
                   &indices,
                   &self.edge_program,
-                  &glium::uniforms::EmptyUniforms,
+                  &uniforms,
+                  &self.params)
+            .unwrap();
+    }
+
+    /// Take a series of lines (edges) and draw them in parallel on the GPU.
+    pub fn render_edges_hscale<S>(&self, target: &mut S, hscale: f32, edges: &[Node])
+        where S: Surface
+    {
+        let vertex_buffer = glium::VertexBuffer::new(self.display, edges).unwrap();
+        let indices = glium::index::NoIndices(glium::index::PrimitiveType::LinesList);
+
+        let uniforms = uniform! {
+            hscale: hscale,
+        };
+
+        target.draw(&vertex_buffer,
+                  &indices,
+                  &self.edge_program,
+                  &uniforms,
                   &self.params)
             .unwrap();
     }

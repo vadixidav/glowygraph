@@ -39,15 +39,20 @@ fn main() {
     loop {
         use glium::Surface;
 
+        // Get dimensions
+        let dims = display.get_framebuffer_dimensions();
+        let hscale = dims.1 as f32 / dims.0 as f32;
+
         let mut target = display.draw();
         target.clear_color(0.0, 0.0, 0.0, 1.0);
 
         // Render nodes
-        glowy.render_nodes(&mut target,
-                           &nodes.iter()
-                               .map(|n| {
+        glowy.render_nodes_hscale(&mut target,
+                                  hscale,
+                                  &nodes.iter()
+                                      .map(|n| {
                 Node {
-                    position: n.clone(),
+                    position: [n[0] / hscale, n[1]],
                     inner_color: [1.0, 0.0, 0.0, 1.0],
                     falloff_color: [0.0, 0.0, 1.0, 1.0],
                     falloff: 0.25,
@@ -55,15 +60,16 @@ fn main() {
                     falloff_radius: 0.1,
                 }
             })
-                               .collect::<Vec<_>>()[..]);
+                                      .collect::<Vec<_>>()[..]);
 
 
         // Render edges
-        glowy.render_edges(&mut target,
-                           &edges.iter()
-                               .flat_map(|indices| {
+        glowy.render_edges_hscale(&mut target,
+                                  hscale,
+                                  &edges.iter()
+                                      .flat_map(|indices| {
                 std::iter::once(Node {
-                        position: indices.0,
+                        position: [indices.0[0] / hscale, indices.0[1]],
                         inner_color: [0.0, 1.0, 0.0, 1.0],
                         falloff_color: [1.0, 0.0, 0.0, 1.0],
                         falloff: 0.25,
@@ -71,7 +77,7 @@ fn main() {
                         falloff_radius: 0.1,
                     })
                     .chain(std::iter::once(Node {
-                        position: indices.1,
+                        position: [indices.1[0] / hscale, indices.1[1]],
                         inner_color: [0.0, 0.0, 1.0, 1.0],
                         falloff_color: [0.0, 1.0, 0.0, 1.0],
                         falloff: 0.10,
@@ -79,11 +85,21 @@ fn main() {
                         falloff_radius: 0.05,
                     }))
             })
-                               .collect::<Vec<_>>()[..]);
+                                      .collect::<Vec<_>>()[..]);
 
 
         // Render nodes
-        glowy.render_qbeziers(&mut target, &qbeziers);
+        glowy.render_qbeziers_hscale(&mut target,
+                                     hscale,
+                                     &qbeziers.iter()
+                                         .cloned()
+                                         .map(|mut b| {
+                                             b.position0[0] /= hscale;
+                                             b.position1[0] /= hscale;
+                                             b.position2[0] /= hscale;
+                                             b
+                                         })
+                                         .collect::<Vec<_>>());
 
         target.finish().unwrap();
 
