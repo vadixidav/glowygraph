@@ -5,7 +5,7 @@ use rand::{Rng, SeedableRng, Isaac64Rng};
 
 use gg::render2::*;
 
-const TOTAL_BEZIERS: usize = 8192;
+const TOTAL_BEZIERS: usize = 32768;
 
 fn main() {
     use glium::DisplayBuild;
