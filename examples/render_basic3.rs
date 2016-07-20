@@ -130,7 +130,7 @@ fn main() {
                 glium::glutin::Event::MouseMoved(x, y) => {
                     let (dimx, dimy) = display.get_framebuffer_dimensions();
                     let (hdimx, hdimy) = (dimx / 2, dimy / 2);
-                    movement.append_rotation_mut(&na::Vector3::new(-(y - hdimy as i32) as f32 /
+                    movement.append_rotation_mut(&na::Vector3::new((y - hdimy as i32) as f32 /
                                                                 128.0,
                                                                 (x - hdimx as i32) as f32 / 128.0,
                                                                 0.0));
@@ -147,16 +147,16 @@ fn main() {
             movement.append_translation_mut(&na::Vector3::new(0.0, 0.1, 0.0));
         }
         if ltstate == glium::glutin::ElementState::Pressed {
-            movement.append_translation_mut(&na::Vector3::new(-0.1, 0.0, 0.0));
-        }
-        if rtstate == glium::glutin::ElementState::Pressed {
             movement.append_translation_mut(&na::Vector3::new(0.1, 0.0, 0.0));
         }
+        if rtstate == glium::glutin::ElementState::Pressed {
+            movement.append_translation_mut(&na::Vector3::new(-0.1, 0.0, 0.0));
+        }
         if fdstate == glium::glutin::ElementState::Pressed {
-            movement.append_translation_mut(&na::Vector3::new(0.0, 0.0, -0.1));
+            movement.append_translation_mut(&na::Vector3::new(0.0, 0.0, 0.1));
         }
         if bkstate == glium::glutin::ElementState::Pressed {
-            movement.append_translation_mut(&na::Vector3::new(0.0, 0.0, 0.1));
+            movement.append_translation_mut(&na::Vector3::new(0.0, 0.0, -0.1));
         }
     }
 }

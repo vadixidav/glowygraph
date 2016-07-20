@@ -3,7 +3,7 @@ mod linear;
 mod qbezier;
 
 /// Node is used to pass nodes into the renderer.
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, RustcDecodable, RustcEncodable, Debug)]
 pub struct Node {
     pub position: [f32; 2],
     pub inner_color: [f32; 4],
@@ -23,7 +23,7 @@ implement_vertex!(Node,
                   inner_radius);
 
 /// QBezier is used to pass a quadratic bezier curve into the shader with interpolating values.
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, RustcDecodable, RustcEncodable, Debug)]
 pub struct QBezier {
     pub position0: [f32; 2],
     pub position1: [f32; 2],

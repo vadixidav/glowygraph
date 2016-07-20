@@ -269,7 +269,7 @@ static FSHADER_SOURCE: &'static str = r#"
 "#;
 
 /// Node is used to pass nodes into the renderer.
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, RustcDecodable, RustcEncodable, Debug)]
 pub struct Node {
     pub position: [f32; 3],
     pub inner_color: [f32; 4],
