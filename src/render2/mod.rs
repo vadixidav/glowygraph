@@ -129,10 +129,33 @@ impl<'a> Renderer<'a> {
         let vertex_buffer = glium::VertexBuffer::new(self.display, qbeziers).unwrap();
         let indices = glium::index::NoIndices(glium::index::PrimitiveType::Points);
 
+        let uniforms = uniform! {
+            hscale: 1.0f32,
+        };
+
         target.draw(&vertex_buffer,
                   &indices,
                   &self.qbezier_program,
-                  &glium::uniforms::EmptyUniforms,
+                  &uniforms,
+                  &self.params)
+            .unwrap();
+    }
+
+    /// Take a series of triangles (quadratic bezier curves) and draw them in parallel on the GPU.
+    pub fn render_qbeziers_hscale<S>(&self, target: &mut S, hscale: f32, qbeziers: &[QBezier])
+        where S: Surface
+    {
+        let vertex_buffer = glium::VertexBuffer::new(self.display, qbeziers).unwrap();
+        let indices = glium::index::NoIndices(glium::index::PrimitiveType::Points);
+
+        let uniforms = uniform! {
+            hscale: hscale,
+        };
+
+        target.draw(&vertex_buffer,
+                  &indices,
+                  &self.qbezier_program,
+                  &uniforms,
                   &self.params)
             .unwrap();
     }

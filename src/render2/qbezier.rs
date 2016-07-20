@@ -98,6 +98,8 @@ pub static GSHADER_SOURCE: &'static str = r#"
     in float ginner_radius0[1];
     in float ginner_radius1[1];
 
+    uniform float hscale;
+
     flat out vec2 fposition0;
     flat out vec2 fposition1;
     flat out vec2 fposition2;
@@ -146,23 +148,23 @@ pub static GSHADER_SOURCE: &'static str = r#"
         vec2 e3 = gposition2[0] + radius2 * vec2(b2.y, -b2.x) - radius2 * b2;
         vec2 e4 = gposition2[0] + radius2 * vec2(-b2.y, b2.x) - radius2 * b2;
 
-        gl_Position = vec4(e1, 0.0, 1.0);
+        gl_Position = vec4(e1.x * hscale, e1.y, 0.0, 1.0);
         realpos = e1;
         EmitVertex();
 
-        gl_Position = vec4(e0, 0.0, 1.0);
+        gl_Position = vec4(e0.x * hscale, e0.y, 0.0, 1.0);
         realpos = e0;
         EmitVertex();
 
-        gl_Position = vec4(e2, 0.0, 1.0);
+        gl_Position = vec4(e2.x * hscale, e2.y, 0.0, 1.0);
         realpos = e2;
         EmitVertex();
 
-        gl_Position = vec4(e4, 0.0, 1.0);
+        gl_Position = vec4(e4.x * hscale, e4.y, 0.0, 1.0);
         realpos = e4;
         EmitVertex();
 
-        gl_Position = vec4(e3, 0.0, 1.0);
+        gl_Position = vec4(e3.x * hscale, e3.y, 0.0, 1.0);
         realpos = e3;
         EmitVertex();
     }
