@@ -9,7 +9,7 @@ keywords = ["graph", "glow", "glowy", "render", "draw"]
 license = "Unlicense"
 
 [dependencies]
-glium = "0.14.0"
-num = "0.1.32"
-nalgebra = "0.5.1"
+glium = "0.15.0"
+num = "0.1.34"
+nalgebra = "0.8.2"
 rand = "0.3.14"
