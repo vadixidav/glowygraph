@@ -29,8 +29,20 @@ pub static VSHADER_SOURCE: &'static str = r#"
     out float ginner_radius1;
 
     void main() {
-        // Wiggle
-        gposition1 = position1 + vec2(-0.0000192, 0.0000214);
+        // Determine if we need to wiggle
+        vec2 norm02 = normalize(position2 - position0);
+        vec2 norm12 = normalize(position2 - position1);
+        float flatness = dot(norm02, norm12);
+        // We must wiggle (angle incredibly small or flat)
+        if (flatness > 0.995) {
+            // If its perfectly flat, we cant know the direction to wiggle, so we must go perpendicular to the norm02
+            vec2 wiggle_vector = vec2(-norm02.y, norm02.x);
+            float scale = length(position2 - position1);
+            // Wiggle by 2 percent of the scale
+            gposition1 = position1 + 0.005 * scale * wiggle_vector;
+        } else {
+            gposition1 = position1;
+        }
         // Find clockwise vs counter-clockwise
         float cc =
             (gposition1.x - position0.x) * (gposition1.y + position0.y) +

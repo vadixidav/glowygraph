@@ -22,7 +22,7 @@ fn main() {
 
     let qbeziers = vec![QBezier {
                             position0: [-0.9, 0.0],
-                            position1: [0.0, -1.0],
+                            position1: [-0.8, -0.7],
                             position2: [0.9, 0.0],
                             inner_color0: [1.0, 0.0, 0.0, 1.0],
                             inner_color1: [0.0, 0.0, 1.0, 1.0],
