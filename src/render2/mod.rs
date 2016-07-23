@@ -59,7 +59,8 @@ implement_vertex!(QBezier,
 pub struct Renderer<'a> {
     display: &'a glium::Display,
     node_program: glium::Program,
-    edge_program: glium::Program,
+    round_edge_program: glium::Program,
+    flat_edge_program: glium::Program,
     round_qbezier_program: glium::Program,
     flat_qbezier_program: glium::Program,
     params: glium::DrawParameters<'a>,
@@ -76,10 +77,16 @@ impl<'a> Renderer<'a> {
                                                       linear::FSHADER_SOURCE,
                                                       Some(linear::NODE_GSHADER_SOURCE))
                 .unwrap(),
-            edge_program: glium::Program::from_source(display,
-                                                      linear::VSHADER_SOURCE,
-                                                      linear::FSHADER_SOURCE,
-                                                      Some(linear::EDGE_GSHADER_SOURCE))
+            round_edge_program:
+                glium::Program::from_source(display,
+                                            linear::VSHADER_SOURCE,
+                                            linear::FSHADER_SOURCE,
+                                            Some(linear::ROUND_EDGE_GSHADER_SOURCE))
+                .unwrap(),
+            flat_edge_program: glium::Program::from_source(display,
+                                                           linear::VSHADER_SOURCE,
+                                                           linear::FSHADER_SOURCE,
+                                                           Some(linear::FLAT_EDGE_GSHADER_SOURCE))
                 .unwrap(),
             round_qbezier_program: glium::Program::from_source(display,
                                                                qbezier::VSHADER_SOURCE,
@@ -99,33 +106,14 @@ impl<'a> Renderer<'a> {
     }
 
     /// Take a series of nodes and draw them in parallel on the GPU.
-    pub fn render_nodes<S>(&self, target: &mut S, nodes: &[Node])
+    pub fn render_nodes<S>(&self, target: &mut S, transform: [[f32; 3]; 3], nodes: &[Node])
         where S: Surface
     {
         let vertex_buffer = glium::VertexBuffer::new(self.display, nodes).unwrap();
         let indices = glium::index::NoIndices(glium::index::PrimitiveType::Points);
 
         let uniforms = uniform! {
-            hscale: 1.0f32,
-        };
-
-        target.draw(&vertex_buffer,
-                  &indices,
-                  &self.node_program,
-                  &uniforms,
-                  &self.params)
-            .unwrap();
-    }
-
-    /// Take a series of nodes and draw them in parallel on the GPU.
-    pub fn render_nodes_hscale<S>(&self, target: &mut S, hscale: f32, nodes: &[Node])
-        where S: Surface
-    {
-        let vertex_buffer = glium::VertexBuffer::new(self.display, nodes).unwrap();
-        let indices = glium::index::NoIndices(glium::index::PrimitiveType::Points);
-
-        let uniforms = uniform! {
-            hscale: hscale,
+            transform: transform,
         };
 
         target.draw(&vertex_buffer,
@@ -137,71 +125,61 @@ impl<'a> Renderer<'a> {
     }
 
     /// Take a series of lines (edges) and draw them in parallel on the GPU.
-    pub fn render_edges<S>(&self, target: &mut S, edges: &[Node])
+    ///
+    /// These will have round ends.
+    pub fn render_edges_round<S>(&self, target: &mut S, transform: [[f32; 3]; 3], edges: &[Node])
         where S: Surface
     {
         let vertex_buffer = glium::VertexBuffer::new(self.display, edges).unwrap();
         let indices = glium::index::NoIndices(glium::index::PrimitiveType::LinesList);
 
         let uniforms = uniform! {
-            hscale: 1.0f32,
+            transform: transform,
         };
 
         target.draw(&vertex_buffer,
                   &indices,
-                  &self.edge_program,
+                  &self.round_edge_program,
                   &uniforms,
                   &self.params)
             .unwrap();
     }
 
     /// Take a series of lines (edges) and draw them in parallel on the GPU.
-    pub fn render_edges_hscale<S>(&self, target: &mut S, hscale: f32, edges: &[Node])
+    ///
+    /// These will have flat ends.
+    pub fn render_edges_flat<S>(&self, target: &mut S, transform: [[f32; 3]; 3], edges: &[Node])
         where S: Surface
     {
         let vertex_buffer = glium::VertexBuffer::new(self.display, edges).unwrap();
         let indices = glium::index::NoIndices(glium::index::PrimitiveType::LinesList);
 
         let uniforms = uniform! {
-            hscale: hscale,
+            transform: transform,
         };
 
         target.draw(&vertex_buffer,
                   &indices,
-                  &self.edge_program,
+                  &self.flat_edge_program,
                   &uniforms,
                   &self.params)
             .unwrap();
     }
 
     /// Take a series of triangles (quadratic bezier curves) and draw them in parallel on the GPU.
-    pub fn render_qbeziers<S>(&self, target: &mut S, qbeziers: &[QBezier])
+    ///
+    /// These will have round ends.
+    pub fn render_qbeziers_round<S>(&self,
+                                    target: &mut S,
+                                    transform: [[f32; 3]; 3],
+                                    qbeziers: &[QBezier])
         where S: Surface
     {
         let vertex_buffer = glium::VertexBuffer::new(self.display, qbeziers).unwrap();
         let indices = glium::index::NoIndices(glium::index::PrimitiveType::Points);
 
         let uniforms = uniform! {
-            hscale: 1.0f32,
-        };
-
-        target.draw(&vertex_buffer,
-                  &indices,
-                  &self.round_qbezier_program,
-                  &uniforms,
-                  &self.params)
-            .unwrap();
-    }
-
-    /// Take a series of triangles (quadratic bezier curves) and draw them in parallel on the GPU.
-    pub fn render_qbeziers_hscale<S>(&self, target: &mut S, hscale: f32, qbeziers: &[QBezier])
-        where S: Surface
-    {
-        let vertex_buffer = glium::VertexBuffer::new(self.display, qbeziers).unwrap();
-        let indices = glium::index::NoIndices(glium::index::PrimitiveType::Points);
-
-        let uniforms = uniform! {
-            hscale: hscale,
+            transform: transform,
         };
 
         target.draw(&vertex_buffer,
@@ -214,36 +192,18 @@ impl<'a> Renderer<'a> {
 
     /// Take a series of triangles (quadratic bezier curves) and draw them in parallel on the GPU.
     ///
-    /// A flat qbezier has a flat end so it can be connected with another bezier curve.
-    pub fn render_flat_qbeziers<S>(&self, target: &mut S, qbeziers: &[QBezier])
+    /// These will have flat ends.
+    pub fn render_qbeziers_flat<S>(&self,
+                                   target: &mut S,
+                                   transform: [[f32; 3]; 3],
+                                   qbeziers: &[QBezier])
         where S: Surface
     {
         let vertex_buffer = glium::VertexBuffer::new(self.display, qbeziers).unwrap();
         let indices = glium::index::NoIndices(glium::index::PrimitiveType::Points);
 
         let uniforms = uniform! {
-            hscale: 1.0f32,
-        };
-
-        target.draw(&vertex_buffer,
-                  &indices,
-                  &self.flat_qbezier_program,
-                  &uniforms,
-                  &self.params)
-            .unwrap();
-    }
-
-    /// Take a series of triangles (quadratic bezier curves) and draw them in parallel on the GPU.
-    ///
-    /// A flat qbezier has a flat end so it can be connected with another bezier curve.
-    pub fn render_flat_qbeziers_hscale<S>(&self, target: &mut S, hscale: f32, qbeziers: &[QBezier])
-        where S: Surface
-    {
-        let vertex_buffer = glium::VertexBuffer::new(self.display, qbeziers).unwrap();
-        let indices = glium::index::NoIndices(glium::index::PrimitiveType::Points);
-
-        let uniforms = uniform! {
-            hscale: hscale,
+            transform: transform,
         };
 
         target.draw(&vertex_buffer,

@@ -31,7 +31,7 @@ fn main() {
                             falloff0: 0.05,
                             falloff1: 0.8,
                             falloff_radius0: 0.02,
-                            falloff_radius1: 0.05,
+                            falloff_radius1: 0.01,
                             inner_radius0: 0.05,
                             inner_radius1: 0.01,
                         }];
@@ -47,10 +47,10 @@ fn main() {
         target.clear_color(0.0, 0.0, 0.0, 1.0);
 
         // Render nodes
-        glowy.render_nodes_hscale(&mut target,
-                                  hscale,
-                                  &nodes.iter()
-                                      .map(|n| {
+        glowy.render_nodes(&mut target,
+                           [[hscale, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]],
+                           &nodes.iter()
+                               .map(|n| {
                 Node {
                     position: [n[0] / hscale, n[1]],
                     inner_color: [1.0, 0.0, 0.0, 1.0],
@@ -60,14 +60,14 @@ fn main() {
                     falloff_radius: 0.1,
                 }
             })
-                                      .collect::<Vec<_>>()[..]);
+                               .collect::<Vec<_>>()[..]);
 
 
         // Render edges
-        glowy.render_edges_hscale(&mut target,
-                                  hscale,
-                                  &edges.iter()
-                                      .flat_map(|indices| {
+        glowy.render_edges_round(&mut target,
+                                 [[hscale, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]],
+                                 &edges.iter()
+                                     .flat_map(|indices| {
                 std::iter::once(Node {
                         position: [indices.0[0] / hscale, indices.0[1]],
                         inner_color: [0.0, 1.0, 0.0, 1.0],
@@ -85,21 +85,21 @@ fn main() {
                         falloff_radius: 0.05,
                     }))
             })
-                                      .collect::<Vec<_>>()[..]);
+                                     .collect::<Vec<_>>()[..]);
 
 
         // Render nodes
-        glowy.render_qbeziers_hscale(&mut target,
-                                     hscale,
-                                     &qbeziers.iter()
-                                         .cloned()
-                                         .map(|mut b| {
-                                             b.position0[0] /= hscale;
-                                             b.position1[0] /= hscale;
-                                             b.position2[0] /= hscale;
-                                             b
-                                         })
-                                         .collect::<Vec<_>>());
+        glowy.render_qbeziers_round(&mut target,
+                                    [[hscale, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]],
+                                    &qbeziers.iter()
+                                        .cloned()
+                                        .map(|mut b| {
+                                            b.position0[0] /= hscale;
+                                            b.position1[0] /= hscale;
+                                            b.position2[0] /= hscale;
+                                            b
+                                        })
+                                        .collect::<Vec<_>>());
 
         target.finish().unwrap();
 

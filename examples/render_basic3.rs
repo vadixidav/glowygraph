@@ -4,7 +4,7 @@ extern crate nalgebra as na;
 extern crate num;
 
 use na::{ToHomogeneous, Translation, Rotation};
-use num::traits::One;
+use num::traits::Zero;
 use gg::render3::*;
 
 fn main() {
@@ -33,7 +33,8 @@ fn main() {
     }
 
     let perspective = *na::Perspective3::new(1.5, 1.0, 0.0, 500.0).to_matrix().as_ref();
-    let mut movement = na::Isometry3::<f32>::one();
+    let mut movement = na::Isometry3::<f32>::new(na::Vector3::zero(),
+                                                 na::Vector3::new(0.0, 3.14, 0.0));
 
     let mut upstate = glium::glutin::ElementState::Released;
     let mut dnstate = glium::glutin::ElementState::Released;
@@ -52,8 +53,8 @@ fn main() {
 
         // Render nodes
         glowy.render_nodes(&mut target,
-                           matr.as_ref(),
-                           &perspective,
+                           matr.as_ref().clone(),
+                           perspective.clone(),
                            &nodes.iter()
                                .map(|n| {
                 Node {
@@ -61,36 +62,36 @@ fn main() {
                     inner_color: [1.0, 0.0, 0.0, 1.0],
                     falloff_color: [0.0, 0.0, 1.0, 1.0],
                     falloff: 0.25,
-                    inner_radius: 1.0,
-                    falloff_radius: 1.0,
+                    inner_radius: 0.0,
+                    falloff_radius: 2.0,
                 }
             })
                                .collect::<Vec<_>>()[..]);
 
         // Render edges
-        glowy.render_edges(&mut target,
-                           matr.as_ref(),
-                           &perspective,
-                           &edges.iter()
-                               .flat_map(|indices| {
+        glowy.render_edges_flat(&mut target,
+                                matr.as_ref().clone(),
+                                perspective.clone(),
+                                &edges.iter()
+                                    .flat_map(|indices| {
                 std::iter::once(Node {
                         position: indices.0,
                         inner_color: [0.0, 1.0, 0.0, 1.0],
                         falloff_color: [1.0, 0.0, 0.0, 1.0],
                         falloff: 0.25,
-                        inner_radius: 0.5,
-                        falloff_radius: 0.5,
+                        inner_radius: 0.0,
+                        falloff_radius: 1.0,
                     })
                     .chain(std::iter::once(Node {
                         position: indices.1,
                         inner_color: [0.0, 0.0, 1.0, 1.0],
                         falloff_color: [0.0, 1.0, 0.0, 1.0],
                         falloff: 0.10,
-                        inner_radius: 1.5,
-                        falloff_radius: 1.5,
+                        inner_radius: 0.0,
+                        falloff_radius: 3.0,
                     }))
             })
-                               .collect::<Vec<_>>()[..]);
+                                    .collect::<Vec<_>>()[..]);
 
         target.finish().unwrap();
 

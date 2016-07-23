@@ -28,7 +28,10 @@ pub static VSHADER_SOURCE: &'static str = r#"
     out float ginner_radius0;
     out float ginner_radius1;
 
+    uniform mat3 transform;
+
     void main() {
+        vec2 wigglepos1;
         // Determine if we need to wiggle
         vec2 norm02 = normalize(position2 - position0);
         vec2 norm12 = normalize(position2 - position1);
@@ -39,18 +42,19 @@ pub static VSHADER_SOURCE: &'static str = r#"
             vec2 wiggle_vector = vec2(-norm02.y, norm02.x);
             float scale = length(position2 - position1);
             // Wiggle by 2 percent of the scale
-            gposition1 = position1 + 0.005 * scale * wiggle_vector;
+            wigglepos1 = position1 + 0.005 * scale * wiggle_vector;
         } else {
-            gposition1 = position1;
+            wigglepos1 = position1;
         }
         // Find clockwise vs counter-clockwise
         float cc =
-            (gposition1.x - position0.x) * (gposition1.y + position0.y) +
-            (position2.x - gposition1.x) * (position2.y + gposition1.y) +
+            (wigglepos1.x - position0.x) * (wigglepos1.y + position0.y) +
+            (position2.x - wigglepos1.x) * (position2.y + wigglepos1.y) +
             (position0.x - position2.x) * (position0.y + position2.y);
+        gposition1 = (transform * vec3(wigglepos1, 1.0)).xy;
         if (cc > 0.0) {
-            gposition0 = position0;
-            gposition2 = position2;
+            gposition0 = (transform * vec3(position0, 1.0)).xy;
+            gposition2 = (transform * vec3(position2, 1.0)).xy;
             ginner_color0 = inner_color0;
             ginner_color1 = inner_color1;
             gfalloff0 = falloff0;
@@ -62,8 +66,8 @@ pub static VSHADER_SOURCE: &'static str = r#"
             ginner_radius0 = inner_radius0;
             ginner_radius1 = inner_radius1;
         } else {
-            gposition0 = position2;
-            gposition2 = position0;
+            gposition0 = (transform * vec3(position2, 1.0)).xy;
+            gposition2 = (transform * vec3(position0, 1.0)).xy;
             ginner_color0 = inner_color1;
             ginner_color1 = inner_color0;
             gfalloff0 = falloff1;
@@ -97,8 +101,6 @@ pub static GSHADER_SOURCE_ROUND: &'static str = r#"
     in float gfalloff_radius1[1];
     in float ginner_radius0[1];
     in float ginner_radius1[1];
-
-    uniform float hscale;
 
     flat out vec2 fposition0;
     flat out vec2 fposition1;
@@ -148,23 +150,23 @@ pub static GSHADER_SOURCE_ROUND: &'static str = r#"
         vec2 e3 = gposition2[0] + radius2 * vec2(b2.y, -b2.x) - radius2 * b2;
         vec2 e4 = gposition2[0] + radius2 * vec2(-b2.y, b2.x) - radius2 * b2;
 
-        gl_Position = vec4(e1.x * hscale, e1.y, 0.0, 1.0);
+        gl_Position = vec4(e1.x, e1.y, 0.0, 1.0);
         realpos = e1;
         EmitVertex();
 
-        gl_Position = vec4(e0.x * hscale, e0.y, 0.0, 1.0);
+        gl_Position = vec4(e0.x, e0.y, 0.0, 1.0);
         realpos = e0;
         EmitVertex();
 
-        gl_Position = vec4(e2.x * hscale, e2.y, 0.0, 1.0);
+        gl_Position = vec4(e2.x, e2.y, 0.0, 1.0);
         realpos = e2;
         EmitVertex();
 
-        gl_Position = vec4(e4.x * hscale, e4.y, 0.0, 1.0);
+        gl_Position = vec4(e4.x, e4.y, 0.0, 1.0);
         realpos = e4;
         EmitVertex();
 
-        gl_Position = vec4(e3.x * hscale, e3.y, 0.0, 1.0);
+        gl_Position = vec4(e3.x, e3.y, 0.0, 1.0);
         realpos = e3;
         EmitVertex();
     }
@@ -189,8 +191,6 @@ pub static GSHADER_SOURCE_FLAT: &'static str = r#"
     in float gfalloff_radius1[1];
     in float ginner_radius0[1];
     in float ginner_radius1[1];
-
-    uniform float hscale;
 
     flat out vec2 fposition0;
     flat out vec2 fposition1;
@@ -240,23 +240,23 @@ pub static GSHADER_SOURCE_FLAT: &'static str = r#"
         vec2 e3 = gposition2[0] + radius2 * vec2(b2.y, -b2.x);
         vec2 e4 = gposition2[0] + radius2 * vec2(-b2.y, b2.x);
 
-        gl_Position = vec4(e1.x * hscale, e1.y, 0.0, 1.0);
+        gl_Position = vec4(e1.x, e1.y, 0.0, 1.0);
         realpos = e1;
         EmitVertex();
 
-        gl_Position = vec4(e0.x * hscale, e0.y, 0.0, 1.0);
+        gl_Position = vec4(e0.x, e0.y, 0.0, 1.0);
         realpos = e0;
         EmitVertex();
 
-        gl_Position = vec4(e2.x * hscale, e2.y, 0.0, 1.0);
+        gl_Position = vec4(e2.x, e2.y, 0.0, 1.0);
         realpos = e2;
         EmitVertex();
 
-        gl_Position = vec4(e4.x * hscale, e4.y, 0.0, 1.0);
+        gl_Position = vec4(e4.x, e4.y, 0.0, 1.0);
         realpos = e4;
         EmitVertex();
 
-        gl_Position = vec4(e3.x * hscale, e3.y, 0.0, 1.0);
+        gl_Position = vec4(e3.x, e3.y, 0.0, 1.0);
         realpos = e3;
         EmitVertex();
     }
