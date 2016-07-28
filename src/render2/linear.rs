@@ -11,14 +11,14 @@ pub static VSHADER_SOURCE: &'static str = r#"
     out float gfalloff;
     out float gfalloff_radius;
     out float ginner_radius;
-    uniform mat3 transform;
+    uniform mat3 modelview;
     void main() {
         ginner_color = inner_color;
         gfalloff_color = falloff_color;
         gfalloff = falloff;
         gfalloff_radius = falloff_radius;
         ginner_radius = inner_radius;
-        gl_Position = vec4(position, 0.0, 1.0);
+        gl_Position = vec4((modelview * vec3(position, 1.0)).xy, 0.0, 1.0);
     }
 "#;
 
@@ -39,6 +39,7 @@ pub static NODE_GSHADER_SOURCE: &'static str = r#"
     out float finner_radius;
     out float ffalloff_radius;
     out float ffalloff;
+    uniform mat3 projection;
 
     void main() {
         finner_color = ginner_color[0];
@@ -50,15 +51,15 @@ pub static NODE_GSHADER_SOURCE: &'static str = r#"
         float full_radius = finner_radius + ffalloff_radius;
 
         delta = full_radius * vec2(0, 2);
-        gl_Position = vec4(center + delta, 0.0, 1.0);
+        gl_Position = vec4((projection * vec3(center + delta, 1.0)).xy, 0.0, 1.0);
         EmitVertex();
 
         delta = full_radius * vec2(-1.7320508075689, -1);
-        gl_Position = vec4(center + delta, 0.0, 1.0);
+        gl_Position = vec4((projection * vec3(center + delta, 1.0)).xy, 0.0, 1.0);
         EmitVertex();
 
         delta = full_radius * vec2(1.7320508075689, -1);
-        gl_Position = vec4(center + delta, 0.0, 1.0);
+        gl_Position = vec4((projection * vec3(center + delta, 1.0)).xy, 0.0, 1.0);
         EmitVertex();
     }
 "#;
@@ -80,6 +81,7 @@ pub static ROUND_EDGE_GSHADER_SOURCE: &'static str = r#"
     out float finner_radius;
     out float ffalloff_radius;
     out float ffalloff;
+    uniform mat3 projection;
 
     void main() {
         vec2 first = gl_in[0].gl_Position.xy;
@@ -99,7 +101,7 @@ pub static ROUND_EDGE_GSHADER_SOURCE: &'static str = r#"
         ffalloff = gfalloff[0];
         radius = finner_radius + ffalloff_radius;
         delta = radius * vec2(net_delta.y, -net_delta.x);
-        gl_Position = vec4(first - delta, 0.0, 1.0);
+        gl_Position = vec4((projection * vec3(first - delta, 1.0)).xy, 0.0, 1.0);
         EmitVertex();
 
         //Vertex 1
@@ -110,7 +112,7 @@ pub static ROUND_EDGE_GSHADER_SOURCE: &'static str = r#"
         ffalloff = gfalloff[0];
         radius = finner_radius + ffalloff_radius;
         delta = radius * net_delta;
-        gl_Position = vec4(first - delta, 0.0, 1.0);
+        gl_Position = vec4((projection * vec3(first - delta, 1.0)).xy, 0.0, 1.0);
         EmitVertex();
 
         //Vertex 2
@@ -121,7 +123,7 @@ pub static ROUND_EDGE_GSHADER_SOURCE: &'static str = r#"
         ffalloff = gfalloff[0];
         radius = finner_radius + ffalloff_radius;
         delta = radius * vec2(-net_delta.y, net_delta.x);
-        gl_Position = vec4(first - delta, 0.0, 1.0);
+        gl_Position = vec4((projection * vec3(first - delta, 1.0)).xy, 0.0, 1.0);
         EmitVertex();
 
         EndPrimitive();
@@ -136,7 +138,7 @@ pub static ROUND_EDGE_GSHADER_SOURCE: &'static str = r#"
         ffalloff = gfalloff[0];
         radius = finner_radius + ffalloff_radius;
         delta = radius * vec2(net_delta.y, -net_delta.x);
-        gl_Position = vec4(first - delta, 0.0, 1.0);
+        gl_Position = vec4((projection * vec3(first - delta, 1.0)).xy, 0.0, 1.0);
         EmitVertex();
 
         //Vertex 2
@@ -147,7 +149,7 @@ pub static ROUND_EDGE_GSHADER_SOURCE: &'static str = r#"
         ffalloff = gfalloff[0];
         radius = finner_radius + ffalloff_radius;
         delta = radius * vec2(-net_delta.y, net_delta.x);
-        gl_Position = vec4(first - delta, 0.0, 1.0);
+        gl_Position = vec4((projection * vec3(first - delta, 1.0)).xy, 0.0, 1.0);
         EmitVertex();
 
         //Vertex 3
@@ -158,7 +160,7 @@ pub static ROUND_EDGE_GSHADER_SOURCE: &'static str = r#"
         ffalloff = gfalloff[1];
         radius = finner_radius + ffalloff_radius;
         delta = radius * vec2(net_delta.y, -net_delta.x);
-        gl_Position = vec4(second - delta, 0.0, 1.0);
+        gl_Position = vec4((projection * vec3(second - delta, 1.0)).xy, 0.0, 1.0);
         EmitVertex();
 
         EndPrimitive();
@@ -173,7 +175,7 @@ pub static ROUND_EDGE_GSHADER_SOURCE: &'static str = r#"
         ffalloff = gfalloff[0];
         radius = finner_radius + ffalloff_radius;
         delta = radius * vec2(-net_delta.y, net_delta.x);
-        gl_Position = vec4(first - delta, 0.0, 1.0);
+        gl_Position = vec4((projection * vec3(first - delta, 1.0)).xy, 0.0, 1.0);
         EmitVertex();
 
         //Vertex 4
@@ -184,7 +186,7 @@ pub static ROUND_EDGE_GSHADER_SOURCE: &'static str = r#"
         ffalloff = gfalloff[1];
         radius = finner_radius + ffalloff_radius;
         delta = radius * vec2(-net_delta.y, net_delta.x);
-        gl_Position = vec4(second - delta, 0.0, 1.0);
+        gl_Position = vec4((projection * vec3(second - delta, 1.0)).xy, 0.0, 1.0);
         EmitVertex();
 
         //Vertex 3
@@ -195,7 +197,7 @@ pub static ROUND_EDGE_GSHADER_SOURCE: &'static str = r#"
         ffalloff = gfalloff[1];
         radius = finner_radius + ffalloff_radius;
         delta = radius * vec2(net_delta.y, -net_delta.x);
-        gl_Position = vec4(second - delta, 0.0, 1.0);
+        gl_Position = vec4((projection * vec3(second - delta, 1.0)).xy, 0.0, 1.0);
         EmitVertex();
 
         EndPrimitive();
@@ -210,7 +212,7 @@ pub static ROUND_EDGE_GSHADER_SOURCE: &'static str = r#"
         ffalloff = gfalloff[1];
         radius = finner_radius + ffalloff_radius;
         delta = radius * net_delta;
-        gl_Position = vec4(second + delta, 0.0, 1.0);
+        gl_Position = vec4((projection * vec3(second + delta, 1.0)).xy, 0.0, 1.0);
         EmitVertex();
 
         //Vertex 3
@@ -221,7 +223,7 @@ pub static ROUND_EDGE_GSHADER_SOURCE: &'static str = r#"
         ffalloff = gfalloff[1];
         radius = finner_radius + ffalloff_radius;
         delta = radius * vec2(net_delta.y, -net_delta.x);
-        gl_Position = vec4(second - delta, 0.0, 1.0);
+        gl_Position = vec4((projection * vec3(second - delta, 1.0)).xy, 0.0, 1.0);
         EmitVertex();
 
         //Vertex 4
@@ -232,7 +234,7 @@ pub static ROUND_EDGE_GSHADER_SOURCE: &'static str = r#"
         ffalloff = gfalloff[1];
         radius = finner_radius + ffalloff_radius;
         delta = radius * vec2(-net_delta.y, net_delta.x);
-        gl_Position = vec4(second - delta, 0.0, 1.0);
+        gl_Position = vec4((projection * vec3(second - delta, 1.0)).xy, 0.0, 1.0);
         EmitVertex();
 
         EndPrimitive();
@@ -256,6 +258,7 @@ pub static FLAT_EDGE_GSHADER_SOURCE: &'static str = r#"
     out float finner_radius;
     out float ffalloff_radius;
     out float ffalloff;
+    uniform mat3 projection;
 
     void main() {
         vec2 first = gl_in[0].gl_Position.xy;
@@ -275,7 +278,7 @@ pub static FLAT_EDGE_GSHADER_SOURCE: &'static str = r#"
         ffalloff = gfalloff[0];
         radius = finner_radius + ffalloff_radius;
         delta = radius * vec2(net_delta.y, -net_delta.x);
-        gl_Position = vec4(first - delta, 0.0, 1.0);
+        gl_Position = vec4((projection * vec3(first - delta, 1.0)).xy, 0.0, 1.0);
         EmitVertex();
 
         //Vertex 2
@@ -286,7 +289,7 @@ pub static FLAT_EDGE_GSHADER_SOURCE: &'static str = r#"
         ffalloff = gfalloff[0];
         radius = finner_radius + ffalloff_radius;
         delta = radius * vec2(-net_delta.y, net_delta.x);
-        gl_Position = vec4(first - delta, 0.0, 1.0);
+        gl_Position = vec4((projection * vec3(first - delta, 1.0)).xy, 0.0, 1.0);
         EmitVertex();
 
         //Vertex 3
@@ -297,7 +300,7 @@ pub static FLAT_EDGE_GSHADER_SOURCE: &'static str = r#"
         ffalloff = gfalloff[1];
         radius = finner_radius + ffalloff_radius;
         delta = radius * vec2(net_delta.y, -net_delta.x);
-        gl_Position = vec4(second - delta, 0.0, 1.0);
+        gl_Position = vec4((projection * vec3(second - delta, 1.0)).xy, 0.0, 1.0);
         EmitVertex();
 
         EndPrimitive();
@@ -312,7 +315,7 @@ pub static FLAT_EDGE_GSHADER_SOURCE: &'static str = r#"
         ffalloff = gfalloff[0];
         radius = finner_radius + ffalloff_radius;
         delta = radius * vec2(-net_delta.y, net_delta.x);
-        gl_Position = vec4(first - delta, 0.0, 1.0);
+        gl_Position = vec4((projection * vec3(first - delta, 1.0)).xy, 0.0, 1.0);
         EmitVertex();
 
         //Vertex 4
@@ -323,7 +326,7 @@ pub static FLAT_EDGE_GSHADER_SOURCE: &'static str = r#"
         ffalloff = gfalloff[1];
         radius = finner_radius + ffalloff_radius;
         delta = radius * vec2(-net_delta.y, net_delta.x);
-        gl_Position = vec4(second - delta, 0.0, 1.0);
+        gl_Position = vec4((projection * vec3(second - delta, 1.0)).xy, 0.0, 1.0);
         EmitVertex();
 
         //Vertex 3
@@ -334,7 +337,7 @@ pub static FLAT_EDGE_GSHADER_SOURCE: &'static str = r#"
         ffalloff = gfalloff[1];
         radius = finner_radius + ffalloff_radius;
         delta = radius * vec2(net_delta.y, -net_delta.x);
-        gl_Position = vec4(second - delta, 0.0, 1.0);
+        gl_Position = vec4((projection * vec3(second - delta, 1.0)).xy, 0.0, 1.0);
         EmitVertex();
 
         EndPrimitive();

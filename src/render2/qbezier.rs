@@ -28,7 +28,7 @@ pub static VSHADER_SOURCE: &'static str = r#"
     out float ginner_radius0;
     out float ginner_radius1;
 
-    uniform mat3 transform;
+    uniform mat3 modelview;
 
     void main() {
         vec2 wigglepos1;
@@ -51,10 +51,10 @@ pub static VSHADER_SOURCE: &'static str = r#"
             (wigglepos1.x - position0.x) * (wigglepos1.y + position0.y) +
             (position2.x - wigglepos1.x) * (position2.y + wigglepos1.y) +
             (position0.x - position2.x) * (position0.y + position2.y);
-        gposition1 = (transform * vec3(wigglepos1, 1.0)).xy;
+        gposition1 = (modelview * vec3(wigglepos1, 1.0)).xy;
         if (cc > 0.0) {
-            gposition0 = (transform * vec3(position0, 1.0)).xy;
-            gposition2 = (transform * vec3(position2, 1.0)).xy;
+            gposition0 = (modelview * vec3(position0, 1.0)).xy;
+            gposition2 = (modelview * vec3(position2, 1.0)).xy;
             ginner_color0 = inner_color0;
             ginner_color1 = inner_color1;
             gfalloff0 = falloff0;
@@ -66,8 +66,8 @@ pub static VSHADER_SOURCE: &'static str = r#"
             ginner_radius0 = inner_radius0;
             ginner_radius1 = inner_radius1;
         } else {
-            gposition0 = (transform * vec3(position2, 1.0)).xy;
-            gposition2 = (transform * vec3(position0, 1.0)).xy;
+            gposition0 = (modelview * vec3(position2, 1.0)).xy;
+            gposition2 = (modelview * vec3(position0, 1.0)).xy;
             ginner_color0 = inner_color1;
             ginner_color1 = inner_color0;
             gfalloff0 = falloff1;
@@ -117,6 +117,8 @@ pub static GSHADER_SOURCE_ROUND: &'static str = r#"
     flat out float finner_radius1;
     out vec2 realpos;
 
+    uniform mat3 projection;
+
     void main() {
         fposition0 = gposition0[0];
         fposition1 = gposition1[0];
@@ -150,23 +152,23 @@ pub static GSHADER_SOURCE_ROUND: &'static str = r#"
         vec2 e3 = gposition2[0] + radius2 * vec2(b2.y, -b2.x) - radius2 * b2;
         vec2 e4 = gposition2[0] + radius2 * vec2(-b2.y, b2.x) - radius2 * b2;
 
-        gl_Position = vec4(e1.x, e1.y, 0.0, 1.0);
+        gl_Position = vec4((projection * vec3(e1, 1.0)).xy, 0.0, 1.0);
         realpos = e1;
         EmitVertex();
 
-        gl_Position = vec4(e0.x, e0.y, 0.0, 1.0);
+        gl_Position = vec4((projection * vec3(e0, 1.0)).xy, 0.0, 1.0);
         realpos = e0;
         EmitVertex();
 
-        gl_Position = vec4(e2.x, e2.y, 0.0, 1.0);
+        gl_Position = vec4((projection * vec3(e2, 1.0)).xy, 0.0, 1.0);
         realpos = e2;
         EmitVertex();
 
-        gl_Position = vec4(e4.x, e4.y, 0.0, 1.0);
+        gl_Position = vec4((projection * vec3(e4, 1.0)).xy, 0.0, 1.0);
         realpos = e4;
         EmitVertex();
 
-        gl_Position = vec4(e3.x, e3.y, 0.0, 1.0);
+        gl_Position = vec4((projection * vec3(e3, 1.0)).xy, 0.0, 1.0);
         realpos = e3;
         EmitVertex();
     }

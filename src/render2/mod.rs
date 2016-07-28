@@ -106,14 +106,19 @@ impl<'a> Renderer<'a> {
     }
 
     /// Take a series of nodes and draw them in parallel on the GPU.
-    pub fn render_nodes<S>(&self, target: &mut S, transform: [[f32; 3]; 3], nodes: &[Node])
+    pub fn render_nodes<S>(&self,
+                           target: &mut S,
+                           modelview: [[f32; 3]; 3],
+                           projection: [[f32; 3]; 3],
+                           nodes: &[Node])
         where S: Surface
     {
         let vertex_buffer = glium::VertexBuffer::new(self.display, nodes).unwrap();
         let indices = glium::index::NoIndices(glium::index::PrimitiveType::Points);
 
         let uniforms = uniform! {
-            transform: transform,
+            modelview: modelview,
+            projection: projection,
         };
 
         target.draw(&vertex_buffer,
@@ -127,14 +132,19 @@ impl<'a> Renderer<'a> {
     /// Take a series of lines (edges) and draw them in parallel on the GPU.
     ///
     /// These will have round ends.
-    pub fn render_edges_round<S>(&self, target: &mut S, transform: [[f32; 3]; 3], edges: &[Node])
+    pub fn render_edges_round<S>(&self,
+                                 target: &mut S,
+                                 modelview: [[f32; 3]; 3],
+                                 projection: [[f32; 3]; 3],
+                                 edges: &[Node])
         where S: Surface
     {
         let vertex_buffer = glium::VertexBuffer::new(self.display, edges).unwrap();
         let indices = glium::index::NoIndices(glium::index::PrimitiveType::LinesList);
 
         let uniforms = uniform! {
-            transform: transform,
+            modelview: modelview,
+            projection: projection,
         };
 
         target.draw(&vertex_buffer,
@@ -148,14 +158,19 @@ impl<'a> Renderer<'a> {
     /// Take a series of lines (edges) and draw them in parallel on the GPU.
     ///
     /// These will have flat ends.
-    pub fn render_edges_flat<S>(&self, target: &mut S, transform: [[f32; 3]; 3], edges: &[Node])
+    pub fn render_edges_flat<S>(&self,
+                                target: &mut S,
+                                modelview: [[f32; 3]; 3],
+                                projection: [[f32; 3]; 3],
+                                edges: &[Node])
         where S: Surface
     {
         let vertex_buffer = glium::VertexBuffer::new(self.display, edges).unwrap();
         let indices = glium::index::NoIndices(glium::index::PrimitiveType::LinesList);
 
         let uniforms = uniform! {
-            transform: transform,
+            modelview: modelview,
+            projection: projection,
         };
 
         target.draw(&vertex_buffer,
@@ -171,7 +186,8 @@ impl<'a> Renderer<'a> {
     /// These will have round ends.
     pub fn render_qbeziers_round<S>(&self,
                                     target: &mut S,
-                                    transform: [[f32; 3]; 3],
+                                    modelview: [[f32; 3]; 3],
+                                    projection: [[f32; 3]; 3],
                                     qbeziers: &[QBezier])
         where S: Surface
     {
@@ -179,7 +195,8 @@ impl<'a> Renderer<'a> {
         let indices = glium::index::NoIndices(glium::index::PrimitiveType::Points);
 
         let uniforms = uniform! {
-            transform: transform,
+            modelview: modelview,
+            projection: projection,
         };
 
         target.draw(&vertex_buffer,
@@ -195,7 +212,8 @@ impl<'a> Renderer<'a> {
     /// These will have flat ends.
     pub fn render_qbeziers_flat<S>(&self,
                                    target: &mut S,
-                                   transform: [[f32; 3]; 3],
+                                   modelview: [[f32; 3]; 3],
+                                   projection: [[f32; 3]; 3],
                                    qbeziers: &[QBezier])
         where S: Surface
     {
@@ -203,7 +221,8 @@ impl<'a> Renderer<'a> {
         let indices = glium::index::NoIndices(glium::index::PrimitiveType::Points);
 
         let uniforms = uniform! {
-            transform: transform,
+            modelview: modelview,
+            projection: projection,
         };
 
         target.draw(&vertex_buffer,

@@ -57,6 +57,7 @@ fn main() {
 
         // Render nodes
         glowy.render_qbeziers_flat(&mut target,
+                                   [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]],
                                    [[hscale, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]],
                                    &qbeziers);
 

@@ -48,6 +48,7 @@ fn main() {
 
         // Render nodes
         glowy.render_nodes(&mut target,
+                           [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]],
                            [[hscale, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]],
                            &nodes.iter()
                                .map(|n| {
@@ -65,6 +66,7 @@ fn main() {
 
         // Render edges
         glowy.render_edges_round(&mut target,
+                                 [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]],
                                  [[hscale, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]],
                                  &edges.iter()
                                      .flat_map(|indices| {
@@ -90,6 +92,7 @@ fn main() {
 
         // Render nodes
         glowy.render_qbeziers_round(&mut target,
+                                    [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]],
                                     [[hscale, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]],
                                     &qbeziers.iter()
                                         .cloned()
