@@ -209,6 +209,8 @@ pub static GSHADER_SOURCE_FLAT: &'static str = r#"
     flat out float finner_radius1;
     out vec2 realpos;
 
+    uniform mat3 projection;
+
     void main() {
         fposition0 = gposition0[0];
         fposition1 = gposition1[0];
@@ -242,23 +244,23 @@ pub static GSHADER_SOURCE_FLAT: &'static str = r#"
         vec2 e3 = gposition2[0] + radius2 * vec2(b2.y, -b2.x);
         vec2 e4 = gposition2[0] + radius2 * vec2(-b2.y, b2.x);
 
-        gl_Position = vec4(e1.x, e1.y, 0.0, 1.0);
+        gl_Position = vec4((projection * vec3(e1, 1.0)).xy, 0.0, 1.0);
         realpos = e1;
         EmitVertex();
 
-        gl_Position = vec4(e0.x, e0.y, 0.0, 1.0);
+        gl_Position = vec4((projection * vec3(e0, 1.0)).xy, 0.0, 1.0);
         realpos = e0;
         EmitVertex();
 
-        gl_Position = vec4(e2.x, e2.y, 0.0, 1.0);
+        gl_Position = vec4((projection * vec3(e2, 1.0)).xy, 0.0, 1.0);
         realpos = e2;
         EmitVertex();
 
-        gl_Position = vec4(e4.x, e4.y, 0.0, 1.0);
+        gl_Position = vec4((projection * vec3(e4, 1.0)).xy, 0.0, 1.0);
         realpos = e4;
         EmitVertex();
 
-        gl_Position = vec4(e3.x, e3.y, 0.0, 1.0);
+        gl_Position = vec4((projection * vec3(e3, 1.0)).xy, 0.0, 1.0);
         realpos = e3;
         EmitVertex();
     }
