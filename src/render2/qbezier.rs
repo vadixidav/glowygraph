@@ -228,21 +228,18 @@ pub static GSHADER_SOURCE_FLAT: &'static str = r#"
 
         vec2 l0 = normalize(gposition1[0] - gposition0[0]);
         vec2 l1 = normalize(gposition2[0] - gposition1[0]);
-        vec2 l2 = normalize(gposition0[0] - gposition2[0]);
 
-        vec2 b0 = normalize(l0 - l2);
         vec2 b1 = normalize(l0 - l1);
-        vec2 b2 = normalize(l2 - l1);
 
         float radius0 = finner_radius0 + ffalloff_radius0;
         float radius2 = finner_radius1 + ffalloff_radius1;
         float radius1 = (radius0 + radius2) * 0.5;
 
-        vec2 e0 = gposition0[0] + radius0 * vec2(b0.y, -b0.x);
-        vec2 e1 = gposition0[0] + radius0 * vec2(-b0.y, b0.x);
+        vec2 e0 = gposition0[0] + radius0 * vec2(l0.y, -l0.x);
+        vec2 e1 = gposition0[0] + radius0 * vec2(-l0.y, l0.x);
         vec2 e2 = gposition1[0] + radius1 * b1;
-        vec2 e3 = gposition2[0] + radius2 * vec2(b2.y, -b2.x);
-        vec2 e4 = gposition2[0] + radius2 * vec2(-b2.y, b2.x);
+        vec2 e3 = gposition2[0] - radius2 * vec2(l1.y, -l1.x);
+        vec2 e4 = gposition2[0] - radius2 * vec2(-l1.y, l1.x);
 
         gl_Position = vec4((projection * vec3(e1, 1.0)).xy, 0.0, 1.0);
         realpos = e1;
