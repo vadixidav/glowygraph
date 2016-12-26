@@ -56,8 +56,11 @@ implement_vertex!(QBezier,
                   inner_radius0,
                   inner_radius1);
 
-pub struct Renderer<'a> {
-    display: &'a glium::Display,
+/// A Renderer is tied to the lifetime of the glium Display and making one builds a GLSL program internally.
+pub struct Renderer<'a, D>
+    where D: 'a
+{
+    display: &'a D,
     node_program: glium::Program,
     round_edge_program: glium::Program,
     flat_edge_program: glium::Program,
@@ -66,10 +69,11 @@ pub struct Renderer<'a> {
     params: glium::DrawParameters<'a>,
 }
 
-/// A Renderer is tied to the lifetime of the glium Display and making one builds a GLSL program internally.
-impl<'a> Renderer<'a> {
-    /// Make a new Renderer from a glium::Display.
-    pub fn new(display: &'a glium::Display) -> Self {
+impl<'a, D> Renderer<'a, D>
+    where D: glium::backend::Facade
+{
+    /// Make a new Renderer from a Facade.
+    pub fn new(display: &'a D) -> Self {
         Renderer {
             display: display,
             node_program: glium::Program::from_source(display,
