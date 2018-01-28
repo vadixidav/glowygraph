@@ -9,8 +9,8 @@ keywords = ["graph", "glow", "glowy", "render", "draw"]
 license = "Unlicense"
 
 [dependencies]
-glium = "0.15"
-num = "0.1"
-nalgebra = "0.10"
-rand = "0.3"
-rustc-serialize = "0.3"
+glium = "0.20"
+cgmath = "0.16"
+
+[dev-dependencies]
+rand = "0.4"

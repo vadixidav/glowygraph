@@ -1,16 +1,18 @@
-extern crate glowygraph as gg;
 extern crate glium;
+extern crate glowygraph as gg;
 extern crate rand;
-use rand::{Rng, SeedableRng, Isaac64Rng};
+use rand::{Isaac64Rng, Rng, SeedableRng};
+use glium::glutin;
 
 use gg::render2::*;
 
 const TOTAL_BEZIERS: usize = 8192;
 
 fn main() {
-    use glium::DisplayBuild;
-    let display = glium::glutin::WindowBuilder::new().with_vsync().build_glium().unwrap();
-    // window.set_cursor_state(glium::glutin::CursorState::Hide).ok().unwrap();
+    let mut events_loop = glutin::EventsLoop::new();
+    let context = glutin::ContextBuilder::new().with_depth_buffer(24);
+    let window_builder = glutin::WindowBuilder::new();
+    let display = glium::Display::new(window_builder, context, &events_loop).unwrap();
     let glowy = Renderer::new(&display);
 
     let mut rng = Isaac64Rng::from_seed(&[5, 1, 2, 6]);
@@ -26,22 +28,42 @@ fn main() {
             .map(|_| {
                 let basepos = [rng.gen_range(-1.0, 1.0), rng.gen_range(-1.0, 1.0)];
                 QBezier {
-                    position0: [(basepos[0] + rng.gen_range(-0.1, 0.1)) / hscale,
-                                basepos[1] + rng.gen_range(-0.1, 0.1)],
-                    position1: [(basepos[0] + rng.gen_range(-0.1, 0.1)) / hscale,
-                                basepos[1] + rng.gen_range(-0.1, 0.1)],
-                    position2: [(basepos[0] + rng.gen_range(-0.1, 0.1)) / hscale,
-                                basepos[1] + rng.gen_range(-0.1, 0.1)],
-                    inner_color0: [rng.next_f32(), rng.next_f32(), rng.next_f32(), rng.next_f32()],
-                    inner_color1: [rng.next_f32(), rng.next_f32(), rng.next_f32(), rng.next_f32()],
-                    falloff_color0: [rng.next_f32(),
-                                     rng.next_f32(),
-                                     rng.next_f32(),
-                                     rng.next_f32()],
-                    falloff_color1: [rng.next_f32(),
-                                     rng.next_f32(),
-                                     rng.next_f32(),
-                                     rng.next_f32()],
+                    position0: [
+                        (basepos[0] + rng.gen_range(-0.1, 0.1)) / hscale,
+                        basepos[1] + rng.gen_range(-0.1, 0.1),
+                    ],
+                    position1: [
+                        (basepos[0] + rng.gen_range(-0.1, 0.1)) / hscale,
+                        basepos[1] + rng.gen_range(-0.1, 0.1),
+                    ],
+                    position2: [
+                        (basepos[0] + rng.gen_range(-0.1, 0.1)) / hscale,
+                        basepos[1] + rng.gen_range(-0.1, 0.1),
+                    ],
+                    inner_color0: [
+                        rng.next_f32(),
+                        rng.next_f32(),
+                        rng.next_f32(),
+                        rng.next_f32(),
+                    ],
+                    inner_color1: [
+                        rng.next_f32(),
+                        rng.next_f32(),
+                        rng.next_f32(),
+                        rng.next_f32(),
+                    ],
+                    falloff_color0: [
+                        rng.next_f32(),
+                        rng.next_f32(),
+                        rng.next_f32(),
+                        rng.next_f32(),
+                    ],
+                    falloff_color1: [
+                        rng.next_f32(),
+                        rng.next_f32(),
+                        rng.next_f32(),
+                        rng.next_f32(),
+                    ],
                     falloff0: rng.gen_range(0.0, 1.0),
                     falloff1: rng.gen_range(0.0, 1.0),
                     falloff_radius0: rng.gen_range(0.001, 0.002),
@@ -56,18 +78,21 @@ fn main() {
         target.clear_color(0.0, 0.0, 0.0, 1.0);
 
         // Render nodes
-        glowy.render_qbeziers_flat(&mut target,
-                                   [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]],
-                                   [[hscale, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]],
-                                   &qbeziers);
+        glowy.render_qbeziers_flat(
+            &mut target,
+            [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]],
+            [[hscale, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]],
+            &qbeziers,
+        );
 
         target.finish().unwrap();
 
-        for ev in display.poll_events() {
-            match ev {
-                glium::glutin::Event::Closed => return,
+        events_loop.poll_events(|event| match event {
+            glutin::Event::WindowEvent { event, .. } => match event {
+                glutin::WindowEvent::Closed => ::std::process::exit(0),
                 _ => (),
-            }
-        }
+            },
+            _ => (),
+        });
     }
 }
